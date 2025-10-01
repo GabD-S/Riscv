@@ -1,0 +1,31 @@
+# Sistema
+desktop.ini
+
+# Java / RARS temporários
+*.class
+*.log
+
+# Compilação C
+*.o
+*.out
+*.exe
+
+# Binários locais
+bin_sortc
+teste0
+teste1
+teste2
+teste3
+teste4
+teste5
+teste6
+teste7
+teste8
+teste9
+teste10
+teste11
+teste12
+teste13
+
+# Misc
+.DS_Store
