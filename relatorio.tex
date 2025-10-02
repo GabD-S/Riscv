@@ -1,0 +1,226 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{center}
+    \includegraphics[width = 5.0 cm]{Lab_1/Logo_UnB.png}
+    
+    \textbf{Universidade de Brasília} \\
+    \textbf{Departamento de Ciência da Computação} \\
+    \textbf{Disciplina: CIC0099 - Organização e Arquitetura de Computadores - Unificado} \\
+    
+    Gabriel de Sousa 211056000 \\
+    Ana Luísa Reis Nascente 211045688\\
+    \textbf{2025/2}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+    \section*{Laboratório 1}
+    \subsection*{- Assembly RISC-V -}
+\end{center}
+
+\subsection*{Objetivos:}
+\begin{itemize}
+    \item Familiarizar o aluno com o Simulador/Montador Rars;
+    \item Desenvolver a capacidade de codificação de algoritmos em linguagem Assembly;
+    \item Desenvolver a capacidade de análise de desempenho de algoritmos em Assembly;
+    \item Familiarizar o aluno com a compilação C para Assembly RISC-V RV32IMF.
+\end{itemize}
+
+\section*{(2.5) 1) Simulador/Montador Rars}
+Faça o download e deszipe o arquivo Lab1.zip disponível no Moodle.
+
+\subsection*{(0.0) 1.1) No diretório Arquivos, abra o Rars16 Customl e carregue o programa de ordenamento sort.s.}
+
+Dado o vetor V[30] = $\{9,2,5,1,8,2,4,3,6,7,10,2,32,54,2,12,6,3,1,78,54,23,1,54,2,65,3,6,55,31\}$:
+
+\begin{enumerate}
+    \item[a)] ordená-lo em ordem crescente e contar o número de instruções por tipo e o número total exigido pelo procedimento sort.
+    \item[] Qual o tamanho em bytes do código executável? E da memória de dados usada?
+    \item[b)] Modifique o programa para ordenar o vetor em ordem decrescente e contar o número de instruções por tipo e o número total exigido pelo procedimento sort.
+    \item[c)] Usando os contadores de instruções e tempo do Banco de Registradores CSR (veja no final), meça novamente a quantidade de instruções executadas e o tempo de execução dos itens a) e b).
+\end{enumerate}
+
+\subsection*{(2.5) 1.2) Considere a execução deste algoritmo em um processador RISC-V com frequência de clock de 50MHz que necessita 1 ciclo de clock para a execução de cada instrução $(CPI=1)$.}
+Para os vetores de entrada de n elementos já ordenados $V_{o}[n]=\{1,2,3,4,...n\}$ e ordenados inversamente $V_{i}[n]=\{n,n-1,n-2,...,2,1\}$:
+\begin{enumerate}
+    \item[(1.5) a)] Para o procedimento sort, escreva as equações dos tempos de execução, $t_{o}(n)$ e $t_{i}(n)$, em função de n.
+    \item[(1.0) b)] Para n=\{10,20,30,40,50,60,70,80,90,100\}, plote (em escala!) as duas curvas, $t_{o}(n)$ e $t_{i}(n)$, em um mesmo gráfico nxt. Comente os resultados obtidos.
+\end{enumerate}
+
+\section*{(2.5) 2) Compilador cruzado GCC}
+Um compilador cruzado (cross compiler) compila um código fonte para uma arquitetura diferente daquela da máquina em que está sendo utilizado.
+Você pode baixar gratuitamente os compiladores gcc para todas as arquiteturas (RISC-V, ARM, MIPS, x86 etc.) e instalar na sua máquina, sendo que o código executável gerado apenas poderá ser executado em uma máquina que possuir o processador para qual foi compilado.
+No gcc, a diretiva de compilação -S faz com que o processo pare com a geração do arquivo em Assembly e a diretiva -march permite definir a arquitetura a ser utilizada. \\
+Ex.:
+\begin{verbatim}
+riscv64-unknown-elf-gcc -S -march=rv32imf -mabi=ilp32f # RV32IMF
+arm-eabi-gcc -S -march=armv7                        # ARMv7
+gcc -S -m32                                        # x86
+\end{verbatim}
+Para fins didáticos, o site Compiler Explorer disponibiliza estes (e vários outros) compiladores C (com diretiva -S) on-line para as arquiteturas RISC-V, ARM, x86 e x86-64 e outras.
+
+\subsection*{(0.0) 2.1) Teste a compilação para Assembly RISC-V com programas triviais em C disponíveis no diretório 'Arquivos', para entender a convenção do uso dos registradores e memória utilizada pelo gcc para a geração do código Assembly, usando as diretivas de otimização -O0 e -O3.}
+Dica: Use o compilador "RISC-V (32-bits) gcc 15.2.0"
+
+\subsection*{(0.5) 2.2) Dado o programa sortc.c, compile-o com a diretiva -O0 e obtenha o arquivo sortc.s.}
+Indique as modificações necessárias no código Assembly gerado para que possa ser executado corretamente no Rars. \\
+Dica: Uso de Assembly em um programa em C. Use a função show definida no sort.s para não precisar implementar a função printf, conforme mostrado no sorte\_mod.c
+
+\subsection*{(1.0) 2.3) Compile o programa sorte\_mod.c e, com a ajuda do Rars, monte uma tabela comparativa com o número total de instruções executadas pelo programa todo, e o tamanho em bytes dos códigos em linguagem de máquina gerados para cada diretiva de otimização da compilação -O0, -O3, -Os.}
+Compare ainda com os resultados obtidos no item 1.1) com o programa sort.s que foi implementado diretamente em Assembly. Analise os resultados obtidos usando o mesmo vetor de entrada.
+
+\subsection*{(1,0) 2.4) Pesquise na internet e explique as diferenças entre as otimizações -O0, -O1, -O2, -O3 e -Os.}
+
+\newpage
+
+\section*{(5.0) 3) Transformada Discreta de Fourier:}
+A Transformada Discreta de Fourier (DFT) converte os sinais amostrados no domínio do tempo (amostra) para o domínio frequência complexa (espectro) e é definida por
+$$ X[k]=\sum_{n=0}^{N-1}x[n]e^{\frac{-2\pi i \cdot k \cdot n}{N}} $$
+onde, $x[n]$ são as amostras do sinal x no domínio da amostra (tempo), $X[k]$ são as amostras complexas do espectro no domínio frequência, N é o número de pontos de $x[n]$ e $X[k]$, $i=\sqrt{-1}$. \\
+Dica: Fórmula de Euler $e^{i \cdot \theta}=\cos(\theta)+i \cdot \sin(\theta)$
+
+\subsection*{(0,5) 3.1) Escreva um procedimento que receba um ângulo em radianos (em fa0) e retorne $\cos(\theta)$ (em fa0) e $\sin(\theta)$ (em fa1).}
+\{fa0,fa1\} = sincos (float theta) \\
+Dica: use aproximação por séries para o cálculo das funções trigonométricas
+
+\subsection*{(1.0) 3.2) Escreva um procedimento em Assembly RISC-V com a seguinte definição}
+\begin{verbatim}
+void DFT (float *x, float *X_real, float *X_imag, int N)
+\end{verbatim}
+que dado o endereço do vetor $x[n]$ de floats (em a0) de tamanho N na memória, os endereços dos espaços reservados para o vetor complexo $X[k]$ (parte real e parte imaginária) (em a1 e a2) e o número de pontos N (em a3), calcule a DFT de N pontos de $x[n]$ e coloque o resultado no espaço alocado para $X\_real[k]$ e $X\_imag[k]$.
+
+\subsection*{(0,5) 3.3) Escreva um programa main que defina no data o vetor $x[n]$ o espaço para o vetor $X[K]$, o valor de N, e chame o procedimento DFT.}
+\begin{verbatim}
+.data
+N:      .word 8
+x:      .float 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+X_real: .float 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+X_imag: .float 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+.text
+jal DFT
+\end{verbatim}
+A seguir, apresente no console a saída dos N pontos no formato: \\
+\begin{tabular}{ll}
+x[n] & X[k] \\
+1.0 & 8.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+1.0 & 0.0 + 0.0i \\
+\end{tabular}
+
+\subsection*{(1.0) 3.4) Calcule a DFT dos seguintes vetores x[n], com N=8}
+\begin{verbatim}
+x1: .float 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+x2: .float 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071, 0.0, 0.7071
+x3: .float 0.0, 0.7071, 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071
+x4: .float 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0
+\end{verbatim}
+
+\subsection*{3.5) Para os sinais $x[n]$ abaixo}
+onde ... são todos valores 0.0
+\begin{enumerate}
+    \item[a)] N=8, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0\}
+    \item[b)] N=12, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[c)] N=16, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[d)] N=20, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[e)] N=24, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[f)] N=28, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[g)] N=32, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[h)] N=36, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[i)] N=40, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+    \item[j)] N=44, x[n]=\{1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, ..., 0.0\}
+\end{enumerate}
+
+\subsubsection*{(1,0) 3.5.1) Para cada item: Meça o tempo de execução do procedimento DFT e calcule a frequência do processador RISC-V Uniciclo simulado pelo Rars.}
+\subsubsection*{(1,0) 3.5.2) Faça um gráfico em escala de $N \times t_{exec}$}
+Que conclusões podemos tirar desta análise?
+
+\newpage
+
+\section*{Dicas para medir o desempenho}
+O RISC-V possui o banco de registradores de Status e Controle (visto mais tarde em aula) no qual armazena continuamente diversas informações úteis, e que podem ser lidas pela instrução:
+\begin{verbatim}
+csrr t1, fcsr # Control and Status Register Read
+\end{verbatim}
+onde t1 é o registrador de destino da leitura e fcsr é um imediato de 12 bits correspondente ao registrador a ser lido.
+Os registradores abaixo são registradores de 64 bits que contém as informações:
+\begin{itemize}
+    \item \{timeh, time\} = tempo do sistema em ms
+    \item \{instreth, instret\} = número de instruções executadas
+    \item \{cycleh, cycle\} = número de ciclos executados (se $CPI=1 \rightarrow$ igual ao instret)
+\end{itemize}
+Geralmente nossos programas não precisarão dessa precisão de 64 bits. Podemos usar então apenas os 32 bits menos significativos: time, instret e cycle. \\
+Ex.: Para medir o tempo e o número de instruções do procedimento PROC para os registradores s0 e s1 respectivamente.
+\begin{verbatim}
+main:
+    ...
+    csrr s1, 3074    # le o num instr atual
+    csrr s0, 3073    # le o time atual
+    jal PROC
+    csrr t0, 3073    # le o time atual
+    csrr t1, 3074    # le o num instr atual
+    sub s0, t0, s0   # calcula o tempo de execução t_exec em ms
+    sub s1, t1, s1   # calcula o número de instruções I executadas
+    ...
+\end{verbatim}
+
+\begin{table}[h!]
+\centering
+\caption{Control and Status Registers}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Name} & \textbf{Number} & \textbf{Value} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Registers}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{Floating Point}} \\ \hline
+ustatus & 0 & 0x00000001 \\ \hline
+fflags & 1 & 0x00000001 \\ \hline
+frm & 2 & 0x00000000 \\ \hline
+fcsr & 3 & 0x00000001 \\ \hline
+uie & 4 & 0x00000000 \\ \hline
+utvec & 5 & 0x00400640 \\ \hline
+uscratch & 64 & 0x00000000 \\ \hline
+uepc & 65 & 0x00400564 \\ \hline
+ucause & 66 & 0x00000008 \\ \hline
+utval & 67 & 0x00000000 \\ \hline
+uip & EB & 0x00000000 \\ \hline
+misa & 769 & 0x40001128 \\ \hline
+cycle & 3072 & 0x00038946 \\ \hline
+time & 3073 & 0x9a130c8d \\ \hline
+instret & 3074 & 0x00038946 \\ \hline
+cycleh & 3200 & 0x00000000 \\ \hline
+timeh & 3201 & 0x00000174 \\ \hline
+instreth & 3202 & 0x00000000 \\ \hline
+\end{tabular}
+\end{table}
+
+Note que terá um erro de 3 instruções na medida do número de instruções. Por quê? \\
+Como o Rars simula um processador RISC-V Uniciclo $(CPI=1)$, conhecendo o número de Instruções executadas (I), pode-se calcular a frequência do processador equivalente: $f = \frac{I}{T_{exec}}$
+
+\subsection*{O relatório deve ser escrito na forma resposta ao item, contendo apenas os itens que valem ponto.}
+No final deverá constar a URL clicável de um vídeo da apresentação gravada usando o PowerPoint onde o grupo apresenta os resultados obtidos dos itens pedidos.
+O grupo deve gravar a apresentação usando uma videoconferência no Teams (usem a equipe OAC-U), com a participação por câmera de TODOS os componentes.
+É importante que todos os participantes falem sobre os itens, quem não participar ativamente da apresentação receberá nota 0 no Laboratório. \\
+Sugestão: crie um canal para o seu grupo no YouTube e poste os vídeos dos relatórios sempre com o nome 'UnB - OAC Unificado - 2025-2' - Grupo Y - Laboratório X - <palavras-chaves que identifiquem este vídeo em uma busca>'.
+
+\subsection*{Passos do vídeo:}
+\begin{enumerate}
+    \item[i)] Apresente o grupo, a disciplina, a turma, o semestre e o Laboratório;
+    \item[ii)] Apresente cada item solicitado que vale ponto. Sugerimos que cada componente apresente um item;
+    \item[iii)] Apresente as conclusões do grupo.
+\end{enumerate}
+
+\end{document}
