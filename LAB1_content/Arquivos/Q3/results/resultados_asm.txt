@@ -1,0 +1,10 @@
+# resultados_asm.txt
+# Método: Assembly (RV32IMF) — DFT 3.2.asm
+# Colunas (tabela resumo): sinal N exec_ms max_rss_MiB instr
+x1 8 0.000000 NA 0
+x2 8 0.000000 NA 0
+x3 8 0.000000 NA 0
+x4 8 0.000000 NA 0
+
+# DFT resultados por k (opcional) — linhas: k Re Im
+# 0 0.000000 0.000000
