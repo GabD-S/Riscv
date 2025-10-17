@@ -1144,6 +1144,86 @@ void DFT(float *x, float *X_real, float *X_imag, int N)
 \end{verbatim}
 que dado o endereço do vetor $x[n]$ de floats (em \texttt{a0}) de tamanho $N$ na memória, os endereços dos espaços reservados para o vetor complexo $X[k]$ (parte real e parte imaginária) (em \texttt{a1} e \texttt{a2}) e o número de pontos $N$ (em \texttt{a3}), calcule a DFT de $N$ pontos de $x[n]$ e coloque o resultado no espaço alocado para \texttt{X\_real[k]} e \texttt{X\_imag[k]}.
 
+\section*{Resposta à Questão 3.2}
+\addcontentsline{toc}{section}{Resposta à Questão 3.2}
+
+\subsection*{Método}
+Implementamos o procedimento \texttt{DFT(float *x, float *X\_real, float *X\_imag, int N)} em Assembly RISC-V (RV32IMF). O algoritmo usa a identidade de Euler $e^{-j\theta}=\cos\theta - j\sin\theta$ e atualiza os fatores girantes (\emph{twiddle}) iterativamente para evitar o recálculo de seno/cosseno no laço interno:
+\begin{align*}
+	heta_{k} 
+&= \frac{2\pi k}{N}, \\
+c_{0} 
+&= \cos(\theta_{k}),\quad s_{0} = -\sin(\theta_{k}), \\
+\begin{bmatrix} c_{n+1} \\ s_{n+1} \end{bmatrix}
+&= \begin{bmatrix} c_{n} \\ s_{n} \end{bmatrix} * (c_{0} + j s_{0}) 
+= \begin{bmatrix} c_{n}c_{0} - s_{n}s_{0} \\ c_{n}s_{0} + s_{n}c_{0} \end{bmatrix}.
+\end{align*}
+Para cada $k$, acumulamos $\mathrm{Re}\{X[k]\} = \sum x[n]c_{n}$ e $\mathrm{Im}\{X[k]\} = \sum x[n]s_{n}$. O par $(c_{0},\;\!-s_{0})$ é obtido por um procedimento \texttt{SINCOSF} (séries de Taylor em ponto flutuante simples) que retorna $\cos$ em \texttt{fa0} e $\sin$ em \texttt{fa1}.
+
+\subsection*{Contrato da Função}
+- Entrada: \texttt{a0}=\&x[0], \texttt{a1}=\&X\_real[0], \texttt{a2}=\&X\_imag[0], \texttt{a3}=N.
+- Saída: resultados gravados em memória (\texttt{X\_real[k]}, \texttt{X\_imag[k]}), sem retorno em registradores.
+
+\subsection*{Trecho do Código (essência do laço)}
+\begin{lstlisting}[language=Assembly]
+# step_angle = 2*pi*k/N  (e^{-jθ})
+la   t0, TWO_PI
+flw  ft0, 0(t0)
+fcvt.s.w ft1, s4    # k
+fmul.s ft2, ft0, ft1
+fcvt.s.w ft1, s3    # N
+fdiv.s fa0, ft2, ft1
+jal  ra, SINCOSF    # fa0=cos θ, fa1=sin θ
+
+fmv.s fs4, fa0      # c0 = cos θ
+la   t1, NEG_ONE
+flw  ft0, 0(t1)
+fmul.s fs5, fa1, ft0  # s0 = -sin θ
+
+la   t2, ONE
+flw  fs2, 0(t2)     # c = 1
+fcvt.s.w fs3, zero  # s = 0
+
+# para n=0..N-1:
+flw  ft0, 0(x_ptr)  # x[n]
+fmul.s ft1, ft0, fs2
+fadd.s fs0, fs0, ft1   # Re += x*c
+fmul.s ft1, ft0, fs3
+fadd.s fs1, fs1, ft1   # Im += x*s
+
+# (c,s) *= (c0 + j s0)
+fmul.s ft1, fs2, fs4
+fmul.s ft2, fs3, fs5
+fsub.s ft3, ft1, ft2   # tmp_c
+fmul.s ft1, fs2, fs5
+fmul.s ft2, fs3, fs4
+fadd.s ft2, ft1, ft2   # tmp_s
+fmv.s fs2, ft3
+fmv.s fs3, ft2
+\end{lstlisting}
+
+Esse procedimento foi validado com um \textit{main} simples (item 3.3) que define $N$, $x[n]$ e espaços de saída, chama \texttt{DFT} e imprime $X[k]$ no console.
+
+\subsection*{Contador de Instruções}
+A Figura \ref{fig:counter} mostra a tela do contador de instruções utilizada durante os testes.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.70\textwidth]{Counter.png}
+\caption{Instruction Counter, Version 1.0 (Felip\dots) — resumo da execução}
+\label{fig:counter}
+\end{figure}
+
+\paragraph{O que houve (explicação)}
+O contador reporta um total de \textbf{2043 instruções} executadas e a distribuição por formato: R-type 1100 (53\%), I-type 602 (29\%), S-type 24 (1\%), B-type 91 (4\%), U-type 137 (6\%), J-type 89 (4\%), R4-type 0 (0\%). Esses números refletem:
+\begin{itemize}
+    \item \textbf{Predominância de R-type (53\%):} operações aritméticas/FP (por exemplo, \texttt{fmul.s}, \texttt{fadd.s}, \texttt{fsub.s}) usam formato R; não houve operações FMA (R4), logo R4-type=0.
+    \item \textbf{I-type (29\%)}: imediatos e acesso a endereços/constantes (\texttt{addi}, conversões, preparação de ponteiros).
+    \item \textbf{U-type (6\%)}: carregamento de endereços com \texttt{lui}/\texttt{auipc} para dados como $2\pi$, $1$, $-1$ e inversos fatoriais.
+    \item \textbf{B/J-type (8\% no total)}: laços e chamadas (\texttt{beq/bge}, \texttt{jal}).
+    \item \textbf{S-type (1\%)}: armazenamento dos resultados \texttt{X\_real[k]} e \texttt{X\_imag[k]}.
+\end{itemize}
+Importante: o total inclui a sobrecarga de medição/\textit{boilerplate} (chamadas, controle de laços e I/O), não apenas o “miolo” da \texttt{DFT}. Isso é esperado quando o contador observa toda a execução do programa.
+
 \subsection*{(0.5) 3.3) Escreva um programa \texttt{main} que defina no \texttt{.data} o vetor $x[n]$, o espaço para o vetor $X[K]$, o valor de $N$, e chame o procedimento DFT.}
 \begin{verbatim}
 .data
