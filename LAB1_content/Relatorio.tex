@@ -28,6 +28,16 @@
   showstringspaces=false,
 }
 
+% Definição de linguagem para Assembly (RISC-V) no listings
+\lstdefinelanguage{Assembly}{
+    morekeywords={.text,.data,.globl,li,la,addi,add,sub,mul,div,rem,
+        slli,srli,srai,andi,ori,xori,andi,or,xor,slt,slti,beq,bne,blt,bge,bgt,
+        j,jal,jalr,ret,ecall,lw,sw,lb,lh,lb,sb,flw,fsw,fmv.d,fcvt.d.w,fmul.d,fadd.d,fsub.d,fdiv.d,
+        fsd,fld,csrr,csrw,mv,lui,auipc},
+    sensitive=true,
+    morecomment=[l]{#},
+}
+
 \hypersetup{
   colorlinks=true,
   linkcolor=black,
@@ -281,7 +291,7 @@ A Figura \ref{fig:otimizacao_comparacao} apresenta uma visualização gráfica d
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{Q1.2/figures/grafico_otimizacao_comparacao.png}
+\includegraphics[width=0.85\textwidth]{grafico_otimizacao_comparacao.png}
 \caption{Comparação visual entre níveis de otimização: número de instruções e tamanho do arquivo.}
 \label{fig:otimizacao_comparacao}
 \end{figure}
@@ -769,7 +779,7 @@ A Figura \ref{fig:otimizacao_funcoes} ilustra graficamente a comparação entre 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{Q1.2/figures/grafico_otimizacao_funcoes.png}
+\includegraphics[width=0.85\textwidth]{grafico_otimizacao_funcoes.png}
 \caption{Comparação visual do número de instruções por função nos níveis -O0 e -O1.}
 \label{fig:otimizacao_funcoes}
 \end{figure}
@@ -972,6 +982,161 @@ Dica: fórmula de Euler $e^{i\theta} = \cos(\theta) + i\sin(\theta)$.
 \subsection*{(0.5) 3.1) Escreva um procedimento que receba um ângulo em radianos (em \texttt{fa0}) e retorne $\cos(\theta)$ (em \texttt{fa0}) e $\sin(\theta)$ (em \texttt{fa1}).}
 \{\texttt{fa0,fa1}\} = \texttt{sincos(float theta)}. \\
 Dica: use aproximação por séries para o cálculo das funções trigonométricas.
+
+\section*{Resposta à Questão 3.1}
+\addcontentsline{toc}{section}{Resposta à Questão 3.1}
+
+\subsection*{Método}
+Implementamos um procedimento \texttt{SINCOS} em Assembly RISC-V (RV32IMF) que calcula $\sin(\theta)$ e $\cos(\theta)$ por aproximação via séries de Taylor, utilizando ponto flutuante em dupla precisão:
+\[
+\sin(x) = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!},\qquad
+\cos(x) = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n}}{(2n)!}
+\]
+Para cada função, somamos um número finito de termos: 5 termos para o seno (potências ímpares iniciando em 1) e 5 termos para o cosseno (termo inicial 1 somado a 4 termos subsequentes de potências pares). Os termos \(x^k/k!\) são formados multiplicando por \(x\) repetidamente (\texttt{POWPREP}) e dividindo pelo fatorial (\texttt{FATPREP}). O sinal alternado é controlado por um acumulador de sinal.
+
+\subsection*{Código}
+O código-fonte utilizado encontra-se em \texttt{Arquivos/3.1.asm} e é incluído abaixo para referência.
+
+\begin{lstlisting}[language=Assembly, caption={Procedimento SINCOS em RISC-V: séries de Taylor para seno e cosseno}]
+.text
+
+MAIN:
+    li a7, 7
+    ecall
+	
+    j SINCOS
+	
+SINCOS:
+    fmv.d fs0, fa0
+    fcvt.d.w ft4, zero
+    li t6, -1
+    fcvt.d.w ft6, t6
+    li t1, 1
+    li s1, 5
+    fcvt.d.w ft5, t1
+    fcvt.d.w ft1, t1
+    jal SINPREP
+    li s1, 4
+    li t1, 1
+    fcvt.d.w ft5, t6
+    fcvt.d.w fs1, t1
+    li t1, 2
+    jal COSPREP
+    j END
+
+SINPREP:
+    mv s2, ra
+SIN:
+    addi s1, s1, -1
+    jal SINI
+    jal SUM
+    addi t1, t1, 2
+    bgt s1, zero, SIN
+    fmv.d fa0, fs1
+    mv ra, s2
+    ret
+
+COSPREP:
+    mv s7, ra
+COS:
+    addi s1, s1, -1
+    jal SINI
+    jal SUM
+    addi t1, t1, 2
+    bgt s1, zero, COS
+    fmv.d fa1, fs1
+    mv ra, s7
+    ret
+	
+END:
+    li a7, 10
+    ecall
+	
+SINI:
+    mv s3, ra
+    mv t2, t1
+    li s0, 1
+    fmv.d fs2, fs0
+    jal FATPREP
+    mv t2, t1
+    addi t2, t2, -1
+    beq t2, zero, CONTINUE
+    jal POWPREP
+	
+CONTINUE:
+    fcvt.d.w fs3, s0
+    fdiv.d fs2, fs2, fs3
+    mv ra, s3
+    ret
+
+FATPREP:
+    mv s4, ra
+FAT:
+    fcvt.d.w ft2, t2
+    fdiv.d fs2, fs2, ft2
+    addi t2, t2, -1
+    bgt t2, zero, FAT
+    mv ra, s4
+    ret
+	
+POWPREP:
+    mv s5, ra
+POW:
+    fmul.d fs2, fs2, fs0
+    addi t2, t2, -1
+    bgt t2, zero, POW
+    mv ra, s5
+    ret
+	
+	
+SUM:
+    mv s6, ra
+    fmul.d fs2, fs2, ft5
+    fadd.d fs1, fs1, fs2
+    fmul.d ft5, ft5, ft6
+    mv ra, s6
+    ret
+\end{lstlisting}
+
+\subsection*{Descrição do funcionamento}
+\begin{itemize}
+    \item \textbf{Entrada:} \texttt{fa0} contém o ângulo em radianos (\(\theta\)). O \texttt{MAIN} realiza \texttt{ecall} 7 no RARS para ler um \emph{double} de entrada e chama \texttt{SINCOS}.
+    \item \textbf{Pré-processamento (label \texttt{SINCOS}):}
+    \begin{itemize}
+        \item Copiamos \(\theta\) para \texttt{fs0} (\textit{argumento base}).
+        \item Definimos variáveis de controle: \texttt{t1} armazena o expoente atual (começa em 1 para seno e em 2 para cosseno), \texttt{s1} é o contador de termos a somar, \texttt{ft5} guarda o sinal acumulado (\(+1\) ou \(-1\)) e \texttt{ft6} vale \(-1\) para alternância de sinal.
+    \end{itemize}
+    \item \textbf{Laços de soma} (\texttt{SINPREP}/\texttt{COSPREP}): em cada iteração, chamamos \texttt{SINI} para construir o termo \(x^{t1}/t1!\) em \texttt{fs2}, então \texttt{SUM} acumula em \texttt{fs1} com o sinal correto e alterna o sinal para a próxima iteração. O expoente \texttt{t1} é incrementado de 2 em 2, gerando apenas potências ímpares (seno) ou pares (cosseno) conforme a preparação.
+    \item \textbf{Cálculo do termo} (\texttt{SINI}):
+    \begin{itemize}
+        \item Inicializa \texttt{fs2} com \(x\) (\texttt{fs0}).
+        \item \texttt{FATPREP} divide sucessivamente por \(t1, t1-1, \dots, 1\) para produzir \(x/t1!\).
+        \item Se \(t1>1\), \texttt{POWPREP} multiplica por \(x\) \(t1-1\) vezes para obter \(x^{t1}/t1!\).
+    \end{itemize}
+    \item \textbf{Acúmulo e alternância} (\texttt{SUM}): \texttt{fs2} é multiplicado por \texttt{ft5} (sinal), somado ao acumulador \texttt{fs1}, e então \texttt{ft5} é multiplicado por \texttt{ft6} para alternar o sinal.
+    \item \textbf{Saída:} ao final, o código move os resultados para registradores de retorno: \texttt{fa0} recebe o valor acumulado do primeiro laço e \texttt{fa1} o do segundo. Em seguida, \texttt{ecall} 10 encerra o programa.
+\end{itemize}
+
+\paragraph{Mapeamento de registradores principais}
+\begin{itemize}
+    \item \texttt{fs0}: \(x=\theta\) (entrada)
+    \item \texttt{fs1}: acumulador da série (resultado parcial/final)
+    \item \texttt{fs2}: termo corrente \(x^{k}/k!\)
+    \item \texttt{ft5}: sinal acumulado (inicia em $+1$ para seno e $-1$ para cosseno)
+    \item \texttt{ft6}: constante $-1$ para alternância de sinal
+    \item \texttt{t1}: expoente atual (\(k\)), cresce de 2 em 2
+    \item \texttt{s1}: contador de termos a somar em cada série
+\end{itemize}
+
+\paragraph{Observação sobre a interface de retorno}
+O enunciado solicita que o procedimento retorne $\cos(\theta)$ em \texttt{fa0} e $\sin(\theta)$ em \texttt{fa1}. O programa fornecido calcula primeiro o \textbf{seno} (armazenado em \texttt{fa0}) e depois o \textbf{cosseno} (armazenado em \texttt{fa1}). Para aderir estritamente à interface pedida, basta trocar a ordem dos \texttt{fmv.d} finais ou realizar uma troca simples antes do término, por exemplo:
+\begin{lstlisting}[language=Assembly]
+# ... após calcular ambos
+fmv.d ft0, fa0   # tmp = sin
+fmv.d fa0, fa1   # fa0 = cos
+fmv.d fa1, ft0   # fa1 = sin
+\end{lstlisting}
+Caso a ordem atual seja aceitável na sua integração (por exemplo, tratando sin e cos por convenção própria), nenhuma alteração adicional é necessária.
 
 \subsection*{(1.0) 3.2) Escreva um procedimento em Assembly RISC-V com a seguinte definição:}
 \begin{verbatim}
