@@ -45,6 +45,9 @@ SIN:
 	jal SUM
 	addi t1, t1, 2
 	bgt s1, zero, SIN
+	li t0, -1
+	fcvt.d.w ft1, t0
+	fmul.d fs1, fs1, ft1
 	fmv.d fa1, fs1
 	mv ra, s2
 	ret
