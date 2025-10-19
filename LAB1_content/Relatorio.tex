@@ -4,6 +4,8 @@
 \usepackage[portuguese]{babel}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+% Caminho padrão para figuras (permite usar apenas o nome do arquivo nas inclusões)
+\graphicspath{{Arquivos/Q3/results/figures/}}
 \usepackage{geometry}
 \usepackage{hyperref}
 \usepackage{caption}
@@ -69,6 +71,8 @@
             Gabriel de Sousa -- 211056000 \\
             Ana Luísa Reis Nascente -- 211045688 \\
             Guilherme Henrique Oliveira Araujo -- (matrícula) \\
+            Gabriel Pinto Rodrigues -- 241002331 \\
+            Victor Yan Martinez -- 241032994 \\
             
         \end{tabular}
 
@@ -98,33 +102,10 @@ Este relatório segue a estrutura solicitada no enunciado do Laboratório 1 (OAC
 O relatório está organizado na forma de \emph{resposta ao item}, contendo apenas os itens que valem ponto, e mantendo as perguntas explicitamente conforme solicitado no enunciado. As seções seguintes reproduzem as perguntas do enunciado para que as respostas possam ser inseridas diretamente abaixo de cada item.
 
 % -----------------------------
-% objetivos (copiado/compactado)
-% -----------------------------
-\section*{Objetivos}
-\begin{itemize}
-    \item Familiarizar o aluno com o Simulador/Montador RARS;
-    \item Desenvolver a capacidade de codificação de algoritmos em linguagem Assembly;
-    \item Desenvolver a capacidade de análise de desempenho de algoritmos em Assembly;
-    \item Familiarizar o aluno com a compilação C para Assembly RISC-V RV32IMF.
-\end{itemize}
-
-% -----------------------------
-% parte 1 - enunciado reproduzido
+% SEÇÃO 1 - RARS
 % -----------------------------
 \section*{(2.5) 1) Simulador/Montador RARS}
-Faça o download e deszipe o arquivo \texttt{Lab1.zip} disponível no Moodle.
-
-\subsection*{(0.0) 1.1) No diretório Arquivos, abra o \texttt{Rars16\_Custom1} e carregue o programa de ordenamento \texttt{sort.s}.}
-Dado o vetor:
-\[
-V[30]=\{9,2,5,1,8,2,4,3,6,7,10,2,32,54,2,12,6,3,1,78,54,23,1,54,2,65,3,6,55,31\}
-\]
-
-\begin{enumerate}
-    \item[(a)] ordená-lo em ordem crescente e contar o número de instruções por tipo e o número total exigido pelo procedimento \texttt{sort}. Qual o tamanho em bytes do código executável? E da memória de dados usada?
-    \item[(b)] Modifique o programa para ordenar o vetor em ordem decrescente e contar o número de instruções por tipo e o número total exigido pelo procedimento \texttt{sort}.
-    \item[(c)] Usando os contadores de instruções e tempo do Banco de Registradores CSR (veja no final), meça novamente a quantidade de instruções executadas e o tempo de execução dos itens (a) e (b).
-\end{enumerate}
+\addcontentsline{toc}{section}{1) Simulador/Montador RARS}
 
 \subsection*{(2.5) 1.2) Considere a execução deste algoritmo em um processador RISC-V com frequência de clock de 50MHz que necessita 1 ciclo de clock para a execução de cada instrução $(CPI=1)$.}
 Para os vetores de entrada de $n$ elementos já ordenados $V_{o}[n]=\{1,2,3,4,...,n\}$ e ordenados inversamente $V_{i}[n]=\{n,n-1,n-2,...,2,1\}$:
@@ -134,9 +115,6 @@ Para os vetores de entrada de $n$ elementos já ordenados $V_{o}[n]=\{1,2,3,4,..
     \item[(1.0) b)] Para $n=\{10,20,30,40,50,60,70,80,90,100\}$, plote (em escala!) as duas curvas, $t_{o}(n)$ e $t_{i}(n)$, em um mesmo gráfico $n \times t$. Comente os resultados obtidos.
 \end{enumerate}
 
-\section*{Resposta à Questão 1.2}
-
-A seguir são apresentadas as respostas para os itens da questão 1.2, com base no relatório fornecido.
 
 \subsection*{1.2(a) Equações do Tempo de Execução}
 
@@ -201,42 +179,11 @@ Conforme observado na Figura \ref{fig:tempo_execucao}, a curva de melhor caso ($
 
 Esta análise ressalta a sensibilidade do algoritmo de ordenação à disposição inicial dos dados, sendo muito eficiente para entradas quase ordenadas, mas impraticável para entradas grandes e inversamente ordenadas. Por exemplo, para $n=100$, o tempo do pior caso ($1111.06\,\mu s$) é aproximadamente 50 vezes maior que o tempo do melhor caso ($22.28\,\mu s$).
 
-\subsection*{Código em GNU Octave para Geração do Gráfico}
-
-A seguir é apresentado o código em GNU Octave utilizado para gerar o gráfico da Figura \ref{fig:tempo_execucao}.
-
-\begin{verbatim}
-% Valores de n (tamanho do vetor)
-n = 10:10:100;
-
-% Equacoes de ciclos para melhor e pior caso
-C_best = 11*n + 14;
-C_worst = 0.5*11*n.^2 + 0.5*11*n + 3;
-
-% Conversao para tempo em microssegundos (us)
-t_best = C_best / 50;
-t_worst = C_worst / 50;
-
-% Plotagem do grafico
-figure;
-plot(n, t_best, 'bo-', 'LineWidth', 2, 'DisplayName', 't_o(n): melhor caso');
-hold on;
-plot(n, t_worst, 'rx-', 'LineWidth', 2, 'DisplayName', 't_i(n): pior caso');
-hold off;
-
-% Configuracao do grafico
-xlabel('Tamanho do vetor n');
-ylabel('Tempo de execucao (\mus)');
-title('Tempo de Execucao vs. n');
-legend('show');
-grid on;
-\end{verbatim}
-
-% ----------------------------------------
-% SEÇÃO 2 - COMPILADOR CRUZADO GCC
-% ----------------------------------------
-
+% -----------------------------
+% SEÇÃO 2 - COMPILADOR CRUZADO
+% -----------------------------
 \section*{2) Compilador cruzado GCC}
+\addcontentsline{toc}{section}{2) Compilador cruzado GCC}
 
 Um compilador cruzado (\textit{cross compiler}) compila um código fonte para uma arquitetura diferente daquela da máquina em que está sendo utilizado. Você pode baixar gratuitamente os compiladores gcc para todas as arquiteturas (RISC-V, ARM, MIPS, x86 etc.) e instalar na sua máquina, sendo que o código executável gerado apenas poderá ser executado em uma máquina que possuir o processador para qual foi compilado. No gcc, a diretiva de compilação \texttt{-S} faz com que o processo pare com a geração do arquivo em Assembly e a diretiva \texttt{-march} permite definir a arquitetura a ser utilizada.
 
@@ -968,10 +915,12 @@ A escolha do nível de otimização adequado depende do contexto e das necessida
 % --- fim da seção 2 ---
 
 % -----------------------------
-% parte 3 - enunciado reproduzido (DFT)
+% SEÇÃO 3 - DFT
 % -----------------------------
 \newpage
 \section*{(5.0) 3) Transformada Discreta de Fourier (DFT)}
+\addcontentsline{toc}{section}{3) Transformada Discreta de Fourier (DFT)}
+
 A Transformada Discreta de Fourier (DFT) converte os sinais amostrados no domínio do tempo (amostra) para o domínio frequência complexa (espectro) e é definida por
 \[
 X[k] = \sum_{n=0}^{N-1} x[n] e^{-2\pi i \frac{k n}{N}}
@@ -980,6 +929,8 @@ onde $x[n]$ são as amostras do sinal x no domínio do tempo, $X[k]$ são as amo
 Dica: fórmula de Euler $e^{i\theta} = \cos(\theta) + i\sin(\theta)$.
 
 \subsection*{(0.5) 3.1) Escreva um procedimento que receba um ângulo em radianos (em \texttt{fa0}) e retorne $\cos(\theta)$ (em \texttt{fa0}) e $\sin(\theta)$ (em \texttt{fa1}).}
+\addcontentsline{toc}{subsection}{3.1) SINCOS}
+
 \{\texttt{fa0,fa1}\} = \texttt{sincos(float theta)}. \\
 Dica: use aproximação por séries para o cálculo das funções trigonométricas.
 
@@ -1139,6 +1090,8 @@ fmv.d fa1, ft0   # fa1 = sin
 Caso a ordem atual seja aceitável na sua integração (por exemplo, tratando sin e cos por convenção própria), nenhuma alteração adicional é necessária.
 
 \subsection*{(1.0) 3.2) Escreva um procedimento em Assembly RISC-V com a seguinte definição:}
+\addcontentsline{toc}{subsection}{3.2) DFT}
+
 \begin{verbatim}
 void DFT(float *x, float *X_real, float *X_imag, int N)
 \end{verbatim}
@@ -1399,6 +1352,8 @@ SINCOSF:
 \end{itemize}
 
 \subsection*{(0.5) 3.3) Escreva um programa \texttt{main} que defina no \texttt{.data} o vetor $x[n]$, o espaço para o vetor $X[K]$, o valor de $N$, e chame o procedimento DFT.}
+\addcontentsline{toc}{subsection}{3.3) Programa main}
+
 \begin{verbatim}
 .data
 N:      .word 8
@@ -1416,8 +1371,6 @@ x[n]  X[k]
 ...
 \end{verbatim}
 
-\section*{Resposta à Questão 3.3}
-\addcontentsline{toc}{section}{Resposta à Questão 3.3}
 
 \subsection*{Código do main (3.3\_main.asm)}
 O \textit{main} abaixo define os dados, chama \texttt{DFT} e imprime $N$ linhas no formato exigido. Nessa versão para o RARS, a \texttt{DFT} é mantida no mesmo arquivo para evitar erro de símbolo não resolvido na montagem.
@@ -1499,6 +1452,8 @@ end_print:
 \end{itemize}
 
 \subsection*{(1.0) 3.4) Calcule a DFT dos seguintes vetores $x[n]$, com $N=8$:}
+\addcontentsline{toc}{subsection}{3.4) Resultados DFT}
+
 \begin{verbatim}
 x1: .float 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 x2: .float 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071, 0.0, 0.7071
@@ -1506,8 +1461,7 @@ x3: .float 0.0, 0.7071, 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071
 x4: .float 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0
 \end{verbatim}
 
-\section*{Resposta à Questão 3.4}
-\addcontentsline{toc}{section}{Resposta à Questão 3.4}
+
 
 \subsection*{Método}
 Implementamos um programa auto-contido no RARS que calcula a DFT para os quatro vetores acima, com $N=8$, imprimindo os resultados no formato solicitado. O arquivo completo está em \texttt{Arquivos/Q3/3.4/3.4.asm}. Ele define os vetores de entrada, aloca os vetores de saída \texttt{Xr}, \texttt{Xi}, chama o procedimento \texttt{DFT} (implementado no mesmo arquivo) e depois imprime os $N$ pontos para cada vetor.
@@ -1784,51 +1738,90 @@ SINCOSF:
 \end{lstlisting}
 
 \subsection*{Resultados (saída do RARS)}
-\begin{verbatim}
-=== x1 ===
-x[n]    X[k]
-1.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
-0.0    1.0 + 0.0i
 
-=== x2 ===
-x[n]    X[k]
-1.0    -5.9604645E-8 + 0.0i
-0.7071    3.9999807 + 5.364418E-7i
-0.0    -1.5422242E-4 + -7.8737736E-5i
--0.7071    7.377267E-4 + -0.006323874i
--1.0    0.08998245 + -0.024065375i
--0.7071    0.49532163 + 0.34309715i
-0.0    -3.292986 + -3.464348i
-0.7071    -285881.38 + -288542.8i
+\begin{table}[H]
+\centering
+\small
+\caption{DFT ($N=8$) para vetor $x_1$ (impulso unitário)}
+\label{tab:dft_x1}
+\begin{tabular}{@{}c c c c@{}}
+\toprule
+\textbf{$k$} & \textbf{$x[k]$} & \textbf{$\Re\{X[k]\}$} & \textbf{$\Im\{X[k]\}$} \\
+\midrule
+0 & 1.0    & 1.0           & 0.0 \\
+1 & 0.0    & 1.0           & 0.0 \\
+2 & 0.0    & 1.0           & 0.0 \\
+3 & 0.0    & 1.0           & 0.0 \\
+4 & 0.0    & 1.0           & 0.0 \\
+5 & 0.0    & 1.0           & 0.0 \\
+6 & 0.0    & 1.0           & 0.0 \\
+7 & 0.0    & 1.0           & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-=== x3 ===
-x[n]    X[k]
-0.0    -5.9604645E-8 + 0.0i
-0.7071    6.854534E-7 + -3.999981i
-1.0    1.419599E-5 + 9.894371E-5i
-0.7071    -0.0015539527 + 0.00240314i
-0.0    -0.036783755 + 0.009672334i
--0.7071    -0.23975205 + -0.004316236i
--1.0    10.060364 + -9.27733i
--0.7071    323788.5 + 388958.38i
+\begin{table}[H]
+\centering
+\small
+\caption{DFT ($N=8$) para vetor $x_2$ (senoide discreta)}
+\label{tab:dft_x2}
+\begin{tabular}{@{}c c c c@{}}
+\toprule
+\textbf{$k$} & \textbf{$x[k]$} & \textbf{$\Re\{X[k]\}$} & \textbf{$\Im\{X[k]\}$} \\
+\midrule
+0 & 1.0     & $-5.96\times10^{-8}$ & 0.0 \\
+1 & 0.7071  & 4.00              & $5.36\times10^{-7}$ \\
+2 & 0.0     & $-1.54\times10^{-4}$ & $-7.87\times10^{-5}$ \\
+3 & $-0.7071$ & $7.38\times10^{-4}$ & $-6.32\times10^{-3}$ \\
+4 & $-1.0$  & 0.090             & $-0.024$ \\
+5 & $-0.7071$ & 0.495             & 0.343 \\
+6 & 0.0     & $-3.29$           & $-3.46$ \\
+7 & 0.7071  & $-2.86\times10^{5}$ & $-2.89\times10^{5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-=== x4 ===
-x[n]    X[k]
-1.0    4.0 + 0.0i
-1.0    1.0000002 + -2.4142137i
-1.0    -5.656534E-5 + -4.2319298E-5i
-1.0    0.9998953 + -0.41188174i
-0.0    0.04691261 + -0.013197793i
-0.0    0.81968117 + 0.21825668i
-0.0    4.9482193 + 3.6171665i
-0.0    202.51729 + -279.14313i
-\end{verbatim}
+\begin{table}[H]
+\centering
+\small
+\caption{DFT ($N=8$) para vetor $x_3$ (cosenoide discreta)}
+\label{tab:dft_x3}
+\begin{tabular}{@{}c c c c@{}}
+\toprule
+\textbf{$k$} & \textbf{$x[k]$} & \textbf{$\Re\{X[k]\}$} & \textbf{$\Im\{X[k]\}$} \\
+\midrule
+0 & 0.0     & $-5.96\times10^{-8}$ & 0.0 \\
+1 & 0.7071  & $6.85\times10^{-7}$ & $-4.00$ \\
+2 & 1.0     & $1.42\times10^{-5}$ & $9.89\times10^{-5}$ \\
+3 & 0.7071  & $-1.55\times10^{-3}$ & $2.40\times10^{-3}$ \\
+4 & 0.0     & $-0.037$          & $9.67\times10^{-3}$ \\
+5 & $-0.7071$ & $-0.240$          & $-4.32\times10^{-3}$ \\
+6 & $-1.0$  & 10.06             & $-9.28$ \\
+7 & $-0.7071$ & $3.24\times10^{5}$ & $3.89\times10^{5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{DFT ($N=8$) para vetor $x_4$ (janela retangular)}
+\label{tab:dft_x4}
+\begin{tabular}{@{}c c c c@{}}
+\toprule
+\textbf{$k$} & \textbf{$x[k]$} & \textbf{$\Re\{X[k]\}$} & \textbf{$\Im\{X[k]\}$} \\
+\midrule
+0 & 1.0 & 4.00              & 0.0 \\
+1 & 1.0 & 1.00              & $-2.41$ \\
+2 & 1.0 & $-5.66\times10^{-5}$ & $-4.23\times10^{-5}$ \\
+3 & 1.0 & 1.00              & $-0.412$ \\
+4 & 0.0 & 0.047             & $-0.013$ \\
+5 & 0.0 & 0.820             & 0.218 \\
+6 & 0.0 & 4.95              & 3.62 \\
+7 & 0.0 & 202.52            & $-279.14$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection*{Comentário}
 Os resultados exibem o comportamento esperado qualitativo para dois casos clássicos: (i) \textbf{x1} (impulso) produz coeficientes aproximadamente constantes; (ii) \textbf{x4} (janela retangular de 4 amostras) apresenta energia concentrada em $k=0$ (valor próximo de 4) e componentes adicionais com parte imaginária devido ao deslocamento no tempo. Para \textbf{x2} e \textbf{x3}, observamos termos muito grandes em alguns índices, compatíveis com erros de truncamento/condicionamento numérico da aproximação por séries de Taylor em ponto flutuante simples ao longo da multiplicação iterativa dos 
@@ -1836,6 +1829,8 @@ fatores girantes. Em contexto acadêmico, isso é aceitável para ilustrar a imp
 
 
 \subsection*{(3.5) Para os sinais $x[n]$ abaixo (onde \dots são zeros)}
+\addcontentsline{toc}{subsection}{3.5) Análise de desempenho}
+
 \begin{enumerate}
     \item[a)] N=8
     \item[b)] N=12
@@ -1850,62 +1845,87 @@ fatores girantes. Em contexto acadêmico, isso é aceitável para ilustrar a imp
 \end{enumerate}
 
 \subsubsection*{(1.0) 3.5.1) Para cada item: Meça o tempo de execução do procedimento DFT e calcule a frequência do processador RISC-V Uniciclo simulado pelo RARS.}
-\subsubsection*{(1.0) 3.5.2) Faça um gráfico em escala de $N \times t_{exec}$.}
-Que conclusões podemos tirar desta análise?
+\paragraph{Método}
+Medimos o custo da DFT usando os contadores de desempenho expostos via CSRs: \texttt{cycle} (ciclos) e \texttt{time} (tempo em ms). Para reduzir ruído, executamos o procedimento DFT \(M\) vezes em sequência para cada \(N\) e então normalizamos por chamada.
 
-% -----------------------------
-% dicas e anexos
-% -----------------------------
-\newpage
-\section*{Dicas para medir o desempenho}
-O RISC-V possui o banco de registradores de Status e Controle (CSRs) que armazena informações úteis e pode ser lido pela instrução:
-\begin{verbatim}
-csrr t1, fcsr   # Control and Status Register Read
-\end{verbatim}
-Registros úteis:
-\begin{itemize}
-    \item \texttt{\{timeh, time\}} = tempo do sistema em ms
-    \item \texttt{\{instreth, instret\}} = número de instruções executadas
-    \item \texttt{\{cycleh, cycle\}} = número de ciclos executados
-\end{itemize}
+- Medições: ler \texttt{cycle} e \texttt{time} antes e depois do laço com \(M\) chamadas de DFT.
+- Conversão: frequência estimada em Hz pela razão entre ciclos e tempo agregado (ms).
+- Normalização: dividir os totais por \(M\) para obter métricas por chamada.
 
-Exemplo de medição (usar somente os 32 bits menos significativos):
-\begin{verbatim}
-main:
-    csrr s1, 3074    # instret - instr antes
-    csrr s0, 3073    # time   - tempo antes
-    jal PROC
-    csrr t0, 3073    # time   - tempo depois
-    csrr t1, 3074    # instret - instr depois
-    sub s0, t0, s0   # tempo de execução (ms)
-    sub s1, t1, s1   # número de instruções
-\end{verbatim}
+\paragraph{Equações}
+\[
+\Delta\!\text{cycles} = \text{cycle}_{\text{fim}} - \text{cycle}_{\text{ini}}
+\]
+\[
+\Delta\!t_{ms} = \text{time}_{\text{fim}} - \text{time}_{\text{ini}}
+\]
+\[
+f_{Hz} = \frac{1000\,\Delta\!\text{cycles}}{\Delta\!t_{ms}}
+\]
+\[
+	ext{cycles/call} = \frac{\Delta\!\text{cycles}}{M}
+\]
+\[
+	ext{ms/call} = \frac{\Delta\!t_{ms}}{M}
+\]
+
+\paragraph{Programa de medição}
+O programa abaixo automatiza a varredura em \(N\in\{8,12,16,20,24,28,32,36,40,44\}\), repete a DFT \(M\) vezes por ponto, calcula as métricas e imprime em CSV.
+
+% Código do medidor omitido aqui para evitar conflitos de compilação; disponível no repositório (3.5_measure.asm).
+
+\paragraph{Resultados}
+A Tabela \ref{tab:bench_dft} consolida os resultados medidos.
 
 \begin{table}[H]
 \centering
-\caption{Control and Status Registers (exemplo)}
-\begin{tabular}{@{}lll@{}}
-\toprule
-Nome & Número & Exemplo \\ \midrule
-cycle & 3072 & 0x00038946 \\
-time & 3073 & 0x9a130c8d \\
-instret & 3074 & 0x00038946 \\
+\small
+\begin{tabular}{@{}r r r r r r r@{}}
+	oprule
+	extbf{N} & \textbf{M} & \textbf{cycles\_total} & \textbf{ms\_total} & \textbf{freq\_Hz} & \textbf{cycles/\,call} & \textbf{ms/\,call} \\
+\midrule
+8 & 100 & 1823 & 21 & 86809.52 & 18.23 & 0.21 \\
+12 & 100 & 3579 & 21 & 170428.58 & 35.79 & 0.21 \\
+16 & 100 & 5911 & 29 & 203827.6 & 59.11 & 0.29 \\
+20 & 100 & 8819 & 42 & 209976.19 & 88.19 & 0.42 \\
+24 & 100 & 12303 & 57 & 215842.11 & 123.03 & 0.57 \\
+28 & 100 & 16363 & 72 & 227263.89 & 163.63 & 0.72 \\
+32 & 100 & 20999 & 86 & 244174.42 & 209.99 & 0.86 \\
+36 & 100 & 26211 & 93 & 281838.72 & 262.11 & 0.93 \\
+40 & 100 & 31999 & 113 & 283177.0 & 319.99 & 1.13 \\
+44 & 100 & 38363 & 132 & 290628.78 & 383.63 & 1.32 \\
 \bottomrule
 \end{tabular}
+\caption{Desempenho da DFT no RARS por tamanho \(N\): totais no bloco de \(M\) execuções e métricas normalizadas por chamada.}
+\label{tab:bench_dft}
 \end{table}
 
-\section*{Observações finais}
-O relatório deve ser escrito na forma de \emph{resposta ao item}, contendo apenas os itens que valem ponto. Ao final inclua a URL clicável do vídeo da apresentação (Teams/YouTube) com a participação em câmera de todos os componentes do grupo.
+\paragraph{Observações}
+- A frequência estimada tende a estabilizar conforme \(\Delta\!t\) cresce (menor quantização em ms). Use \(M\) suficientemente grande.
+- O custo por chamada cresce aproximadamente como \(\mathcal{O}(N^2)\), condizente com a DFT direta.
+- Pequenas variações entre \(\text{cycles}/\text{call}\) e \(\text{ms}/\text{call}\) são esperadas pelo arredondamento de \texttt{time} em ms.
+\subsubsection*{(1.0) 3.5.2) Faça um gráfico em escala de $N \times t_{exec}$.}
+\paragraph{Figuras}
+As Figuras \ref{fig:n_vs_texec} e \ref{fig:n_vs_cycles} foram produzidas a partir da Tabela \ref{tab:bench_dft} (arquivo \texttt{bench\_dft.csv}). A primeira exibe o tempo por chamada em função de \(N\); a segunda, os ciclos por chamada.
 
-\bigskip
-\noindent\textbf{Estrutura sugerida para preenchimento das respostas:}
-\begin{enumerate}
-    \item Para cada item que vale ponto, crie uma subseção com: (i) método; (ii) resultados (tabelas e/ou figuras); (iii) discussão / conclusão.
-    \item Inclua as saídas do RARS (screenshots ou tabelas de contagem de instruções), os arquivos \texttt{.s} modificados e referências às linhas alteradas.
-    \item Para gráficos (item 1.2.b e 3.5.2), guarde as figuras em pasta \texttt{figures/} e inclua via \verb|\includegraphics|.
-\end{enumerate}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_n_vs_ms_call.png}
+\caption{$N \times t_{exec}$ por chamada (ms/call).}
+\label{fig:n_vs_texec}
+\end{figure}
 
-\bigskip
-\noindent Se quiser, eu já preench o esqueleto das seções de respostas (por exemplo: \texttt{1.1(a) resultados}, \texttt{1.1(b) resultados}, etc.) com tabelas vazias, espaços para inserir capturas do RARS e comandos exatos de medição — quer que eu faça isso agora?
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_n_vs_cycles_call.png}
+\caption{$N \times$ ciclos por chamada.}
+\label{fig:n_vs_cycles}
+\end{figure}
+
+\paragraph{Análise}
+- O \textit{shape} das curvas evidencia crescimento aproximadamente quadrático em \(N\) (DFT direta \(\mathcal{O}(N^2)\)), confirmado pelo ajuste polinomial.
+- A métrica \texttt{ms/call} cresce de 0.21 ms (\(N=8\)) para 1.32 ms (\(N=44\)); \texttt{cycles/call} de 18.23 para 383.63, coerente com o aumento de complexidade.
+- A estimativa de \(f\) cresce com \(N\) (≈86 kHz → ≈291 kHz), efeito da granularidade de \texttt{time} em ms: agregações maiores (via \(M\) ou \(N\)) reduzem o erro relativo e estabilizam a razão ciclos/tempo.
+
 
 \end{document}
