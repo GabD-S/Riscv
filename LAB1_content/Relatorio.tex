@@ -123,17 +123,17 @@ As equações teóricas para o tempo de execução do algoritmo \texttt{SORT} fo
 \subsubsection*{Caso Melhor (vetor já ordenado $V_{o}[n]=\{1,2,3,...,n\}$)}
 \begin{itemize}
     \item \textbf{Número de ciclos (instruções)}:
-    $$ C_{best}(n) = 11n + 14 $$
+    $$ C_{best}(n) = 30n + 48 $$
     \item \textbf{Tempo em microssegundos ($\mu s$)}, dado $f=50 \times 10^{6} Hz$:
-    $$ t_{o}(n) = \frac{C_{best}(n)}{f} = \frac{11n + 14}{50 \times 10^{6}}s = \frac{11n + 14}{50}\mu s $$
+    $$ t_{o}(n) = \frac{C_{best}(n)}{f} = \frac{30n + 48}{50 \times 10^{6}}s = \frac{30n + 48}{50}\mu s $$
 \end{itemize}
 
 \subsubsection*{Caso Pior (vetor inversamente ordenado $V_{i}[n]=\{n,n-1,...,1\}$)}
 \begin{itemize}
     \item \textbf{Número de ciclos}:
-    $$ C_{worst}(n) = \frac{11}{2}n^{2} + \frac{11}{2}n + 3 $$
+    $$ C_{worst}(n) = 9n^{2} + 16n + 53 $$
     \item \textbf{Tempo em microssegundos ($\mu s$)}:
-    $$ t_{i}(n) = \frac{C_{worst}(n)}{f} = \frac{\frac{11}{2}n^{2} + \frac{11}{2}n + 3}{50 \times 10^{6}}s = \frac{\frac{11}{2}n^{2} + \frac{11}{2}n + 3}{50}\mu s $$
+    $$ t_{i}(n) = \frac{9n^{2} + 16n + 53}{50 \times 10^{6}}s = \frac{9n^{2} + 16n + 53}{50}\mu s $$
 \end{itemize}
 
 \subsection*{1.2(b) Dados para o Gráfico e Análise}
@@ -147,16 +147,16 @@ A tabela abaixo apresenta os tempos de execução calculados para o melhor caso 
 \hline
 \textbf{n} & \textbf{$t_o(n) (\mu s)$} & \textbf{$t_i(n) (\mu s)$} \\
 \hline
-10 & 2.48 & 12.16 \\
-20 & 4.68 & 46.26 \\
-30 & 6.88 & 102.36 \\
-40 & 9.08 & 180.46 \\
-50 & 11.28 & 280.56 \\
-60 & 13.48 & 402.66 \\
-70 & 15.68 & 546.76 \\
-80 & 17.88 & 712.86 \\
-90 & 20.08 & 900.96 \\
-100 & 22.28 & 1111.06 \\
+10 & 6.96 & 22.26 \\
+20 & 12.96 & 79.46 \\
+30 & 18.96 & 172.46 \\
+40 & 24.96 & 301.86 \\
+50 & 30.96 & 467.06 \\
+60 & 36.96 & 668.26 \\
+70 & 42.96 & 905.46 \\
+80 & 48.96 & 1178.66 \\
+90 & 54.96 & 1487.86 \\
+100 & 60.96 & 1833.06 \\
 \hline
 \end{tabular}
 \caption{Tempos de execução calculados para diferentes valores de n.}
@@ -175,9 +175,9 @@ A Figura \ref{fig:tempo_execucao} apresenta a comparação entre os tempos de ex
 
 \subsubsection*{Análise dos Resultados}
 
-Conforme observado na Figura \ref{fig:tempo_execucao}, a curva de melhor caso ($t_o(n)$) demonstra um crescimento linear em relação a $n$, resultado direto da equação $t_o(n) = \frac{11n + 14}{50}$. Em contraste, a curva de pior caso ($t_i(n)$) apresenta um crescimento quadrático, tornando-se significativamente maior à medida que $n$ aumenta, conforme esperado pela equação $t_i(n) = \frac{\frac{11}{2}n^{2} + \frac{11}{2}n + 3}{50}$. 
+Conforme observado na Figura \ref{fig:tempo_execucao}, a curva de melhor caso ($t_o(n)$) demonstra um crescimento linear em relação a $n$, resultado direto da equação $t_o(n) = \frac{30n + 48}{50}$. Em contraste, a curva de pior caso ($t_i(n)$) apresenta um crescimento quadrático, tornando-se significativamente maior à medida que $n$ aumenta, conforme esperado pela equação $t_i(n) = \frac{9n^{2} + 16n + 53}{50}$. 
 
-Esta análise ressalta a sensibilidade do algoritmo de ordenação à disposição inicial dos dados, sendo muito eficiente para entradas quase ordenadas, mas impraticável para entradas grandes e inversamente ordenadas. Por exemplo, para $n=100$, o tempo do pior caso ($1111.06\,\mu s$) é aproximadamente 50 vezes maior que o tempo do melhor caso ($22.28\,\mu s$).
+Esta análise ressalta a sensibilidade do algoritmo de ordenação à disposição inicial dos dados, sendo muito eficiente para entradas quase ordenadas, mas impraticável para entradas grandes e inversamente ordenadas. Por exemplo, para $n=100$, o tempo do pior caso ($1833.06\,\mu s$) é aproximadamente 30 vezes maior que o tempo do melhor caso ($60.96\,\mu s$).
 
 % -----------------------------
 % SEÇÃO 2 - COMPILADOR CRUZADO
