@@ -1,0 +1,254 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+% Caminho padrão para figuras (permite usar apenas o nome do arquivo nas inclusões)
+\graphicspath{{Arquivos/Q3/results/figures/}}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\geometry{a4paper, margin=1in}
+
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!40!black},
+  stringstyle=\color{purple},
+  showstringspaces=false,
+}
+
+% Definição de linguagem para Assembly (RISC-V) no listings
+\lstdefinelanguage{Assembly}{
+    morekeywords={.text,.data,.globl,li,la,addi,add,sub,mul,div,rem,
+        slli,srli,srai,andi,ori,xori,andi,or,xor,slt,slti,beq,bne,blt,bge,bgt,
+        j,jal,jalr,ret,ecall,lw,sw,lb,lh,lb,sb,flw,fsw,fmv.d,fcvt.d.w,fmul.d,fadd.d,fsub.d,fdiv.d,
+        fsd,fld,csrr,csrw,mv,lui,auipc},
+    sensitive=true,
+    morecomment=[l]{#},
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdftitle={Laboratório 1 - Assembly RISC-V},
+  pdfauthor={Grupo}
+}
+
+\begin{document}
+
+% -----------------------------
+% capa (estilo semelhante ao OAC_LAB1)
+% -----------------------------
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        \includegraphics[width=5cm]{Lab_1/Logo_UnB.png}\\[1cm]
+
+        {\LARGE \textbf{Universidade de Brasília}}\\[4pt]
+        {\large Departamento de Ciência da Computação}\\[12pt]
+        {\Large \textbf{Disciplina: CIC0099 -- Organização e Arquitetura de Computadores -- Unificado}}\\[20pt]
+
+        {\huge \textbf{Laboratório 1}}\\[6pt]
+        {\Large \textbf{Assembly RISC-V}}\\[2cm]
+
+        \textbf{Grupo:} \\[4pt]
+        \begin{tabular}{l}
+            
+            Gabriel de Sousa -- 211056000 \\
+            Ana Luísa Reis Nascente -- 211045688 \\
+            Guilherme Henrique Oliveira Araujo -- 211026646 \\
+            Gabriel Pinto Rodrigues -- 241002331 \\
+            Victor Yan Martinez -- 241032994 \\
+            
+        \end{tabular}
+
+        \vfill
+
+        
+
+        \vspace{0.8cm}
+        \today
+    \end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+
+\newpage
+
+\section*{Descrição Geral}
+
+(10.0) Implemente o processador \textbf{Uniciclo com ISA Reduzida} com as instruções:
+\texttt{add, sub, and, or, slt, lw, sw, beq, jal}, e ainda as instruções \texttt{jalr}, \texttt{addi} e \texttt{lui} . 
+
+\begin{center}
+    \includegraphics[width = 15 cm]{Lab_2/Circuito.png}
+\end{center}
+
+
+
+% seção de análise (relato do experimento)
+\section{Análise do programa de teste `de1.s`}
+
+\subsection{1.1) (1.0):} Analise o programa de1.s que testa a corretude da implementação de todas as 9 + 3 instruções e
+teste no Rars. Dica: O registrador t0 é usado para visualizar resultados!
+
+A seção a seguir apresenta o relato do experimento realizado com o programa \texttt{de1.s}. A tabela resume o trace observado (valores depois da execução de cada instrução-chave) e a coluna "Esperado" apresenta o resultado calculado pela semântica RISC‑V. A subseção seguinte contém as observações e conclusões extraídas do experimento.
+
+\begin{longtable}{p{4.5cm} p{3.2cm} p{3.2cm} p{5.5cm}}
+\caption{Trace reduzido e comparação Observado x Esperado para \texttt{de1.s}.}\\
+	oprule
+Instrução (label / ordem) & Observado (valores após) & Esperado (valores calculados) & Comentário / interpretação \\
+\midrule
+\endfirsthead
+	oprule
+Instrução (label / ordem) & Observado (valores após) & Esperado (valores calculados) & Comentário / interpretação \\
+\midrule
+\endhead
+
+\lstinline|lw t1,0(gp)| (primeira instrução de MAIN) & t1 = -241 & t1 = 0xFFFFFF0F = -241 & A palavra em gp+0 tem valor 0xFFFFFF0F (interpretação signed = -241). \\
+
+\lstinline|addi t2,zero,0x777| & t2 = 1911 & t2 = 0x777 = 1911 & Imediato positivo carregado em t2. \\
+
+\lstinline|and t0,t1,t2| & t0 = 1799 & t0 = (0xFFFFFF0F & 0x0777) = 0x707 = 1799 & Operação bit‑a‑bit conforme esperado. \\
+
+\lstinline|or t0,t1,t2| & t0 = -129 & t0 = 0xFFFFFF7F (signed = -129) & Resultado com bit de sinal ativo; representação signed refletida no valor. \\
+
+\lstinline|add t0,t2,t1| & t0 = 1670 & t0 = 1911 + (-241) = 1670 & Soma aritmética correta (sem overflow). \\
+
+\lstinline|sub t0,t2,t1| & t0 = 2152 & t0 = 1911 - (-241) = 2152 & Subtração aritmética correta. \\
+
+\lstinline|slt t0,t1,t2| & t0 = 1 & t0 = (t1 < t2) ? 1 : 0 = 1 & Comparação signed: -241 < 1911 é verdadeira. \\
+
+\lstinline|slt t0,t2,t1| & t0 = 0 & t0 = (t2 < t1) ? 1 : 0 = 0 & Comparação signed invertida resulta em falso. \\
+
+\lstinline|beq t0,zero,PULA| & branch tomado (PC muda para PULA) & branch tomado porque t0==0 & Controle de fluxo redirecionado para o bloco PULA. \\
+
+\lstinline|jal PROC| (em PULA) & ra = 4194364 (observado) & ra = endereço de retorno (PC+4) & Endereço de retorno salvo em \texttt{ra}; salto para \texttt{PROC}. \\
+
+\lstinline|PROC: li t0,127| & t0 = 127 & t0 = 127 & Carregamento imediato correto. \\
+
+\lstinline|sw t0,4(gp)| & memória[gP+4] = 127 & gravação na memória efetuada & Valor 127 escrito em gp+4. \\
+
+\lstinline|lw t0,0(gp)| & t0 = -241 & t0 = conteúdo em gp+0 = 0xFFFFFF0F = -241 & Releitura confirma conteúdo inicial. \\
+
+\lstinline|lw t0,4(gp)| & t0 = 127 & t0 = 127 (valor escrito por \lstinline|sw|) & Leitura confirma valor previamente escrito. \\
+
+\lstinline|ret| / \lstinline|jalr ra,0| & retorno para instrução após \lstinline|jal PROC| & retorno conforme esperado & Fluxo volta para a instrução seguinte ao \texttt{jal}. \\
+
+Instrução após retorno (\lstinline|addi t0,zero,0xFFFFFCCC|) & t0 = -820 & t0 = 0xFFFFFCCC = -820 & Imediato negativo carregado (sign‑extension correta). \\
+
+\bottomrule
+\end{longtable}
+
+\subsection*{Resultados e observações}
+\begin{itemize}
+    \item Os valores observados durante o experimento correspondem aos resultados aritméticos e bit‑a‑bit previstos pela semântica das instruções RISC‑V (ex.: load de 0xFFFFFF0F → -241; addi 0x777 → 1911).
+    \item Operações lógicas (AND/OR) produziram os valores esperados considerando a representação binária dos operandos; em particular, a operação OR resultou em valor com bit de sinal ativo (representado como número negativo no formato signed). 
+    \item Operações aritméticas (ADD/SUB) com operandos negativos retornaram resultados numéricos corretos e não houve indicação de overflow nas instruções observadas.
+    \item As instruções de comparação (SLT) e o BEQ conduziram o fluxo de controle conforme esperado: a combinação de SLT seguida de BEQ redirecionou a execução para o bloco PULA, que invoca \texttt{PROC} via \texttt{jal}.
+    \item A chamada \texttt{jal PROC} armazenou o endereço de retorno em \texttt{ra} (valor observado consistente com PC+4). A rotina \texttt{PROC} escreveu em memória com \texttt{sw} e os subsequentes \texttt{lw} leram os valores esperados, confirmando coerência de acesso à memória e alinhamento de palavra.
+    \item Após retorno de \texttt{PROC}, a execução prosseguiu normalmente até a instrução que carrega um imediato negativo em \texttt{t0} (0xFFFFFCCC → -820), indicando sign‑extension correta do imediato.
+\end{itemize}
+
+\subsection*{1.2) (1.0): } Implemente o Banco de Registradores com 3 leituras simultâneas: rs1, rs2 e disp.
+Stack Pointer (sp) inicial: 0x1001_03FC
+
+
+\subsection{Resultados do teste da instrução TRI (Banco com 3 portas de leitura)}
+
+Executou-se um testbench Verilog que instancia o banco de registradores com três portas de leitura e uma mini‑CPU que reconhece a instrução custom `TRI` (opcode 0xAA). A instrução TRI lê simultaneamente os registradores rs1, rs2 e rs3, soma seus valores e grava o resultado em memória.
+
+Saída do testbench (console):
+\begin{verbatim}
+Starting testbench...
+Result_out = 23 (0x00000017)
+TEST PASSED: triple-read sum = 23
+tb_mini_cpu.v:35: $finish called at 21000 (1ps)
+\end{verbatim}
+
+Interpretação e comentários:
+\begin{itemize}
+    \item A saída mostra que os três registradores iniciais (configurados no bloco inicial do regfile como r1=5, r2=7, r3=11) foram lidos corretamente e somados, produzindo 23, como esperado.
+    \item O teste valida a implementação do banco com três portas de leitura: a mini‑CPU obteve os três valores no mesmo ciclo lógico da instrução TRI e calculou a soma sem inconsistências.
+    \item Os arquivos usados para este experimento foram gerados em \texttt{LAB2/tri\_instr/}: 
+    	exttt{regfile\_3read.v} (banco 3‑read), \texttt{mini\_cpu.v} (decodificador da instrução TRI) e \texttt{tb\_mini\_cpu.v} (testbench). A simulação foi executada com Icarus Verilog (\texttt{iverilog} / \texttt{vvp}).
+    \item Conclusão prática: a implementação do banco de registradores com 3 leituras simultâneas está funcional e comprovada pelo testbench; isso atende ao requisito do item 1.2.
+\end{itemize}
+
+\subsection{1.3) (1.0): Gerador de Imediatos}
+
+O gerador de imediatos é um módulo que recebe a palavra de instrução de 32 bits e produz um valor imediato de 32 bits já alinhado e com sinal estendido, pronto para ser consumido pelo datapath (ULA, cálculo de endereços para loads/stores e cálculo de alvos para branches/jumps).
+
+A interface do módulo expõe a entrada com a instrução de 32 bits e uma saída com o imediato de 32 bits. Conceitualmente, o módulo implementa as regras do formato RISC‑V para os formatos de imediato mais comuns:
+
+\begin{itemize}
+    \item I‑type (ex.: \texttt{addi}, \texttt{lw}, \texttt{jalr}): o imediato de 12 bits é extraído da parte alta da instrução e é sign‑extended para 32 bits antes de ser entregue ao datapath.
+    \item S‑type (ex.: \texttt{sw}): o imediato de 12 bits é formado reunindo os dois campos dispersos na instrução (parte alta e parte baixa) e, em seguida, aplicando sign‑extension para 32 bits.
+    \item B‑type (ex.: \texttt{beq}): o imediato de branch é reconstruído a partir dos bits espalhados pela instrução, com o LSB forçado a zero (já que offsets são múltiplos de 2); o resultado é sign‑extended para 32 bits e pode ser somado ao PC para obter o alvo.
+    \item J‑type (ex.: \texttt{jal}): monta‑se o imediato de 20 bits utilizado em saltos longos, com o LSB zerado para alinhamento de palavra, e realiza‑se sign‑extension para 32 bits.
+    \item U‑type (ex.: \texttt{lui}): usa‑se diretamente os 20 bits superiores deslocados 12 bits à esquerda (equivalente a concatenar 12 zeros aos 20 bits superiores da instrução).
+\end{itemize}
+
+Aspectos relevantes e exemplos práticos:
+\begin{itemize}
+    \item O módulo trata corretamente a extensão de sinal (two's complement) para immediatos negativos — por exemplo, a instrução \texttt{addi t0,zero,0xFFFFFCCC} resulta no imediato \texttt{0xFFFFFCCC} que interpretado em decimal signed equivale a −820; o gerador emite esse valor já sinalizado para a ULA.
+    \item Para branch/jump o imediato já vem com o bit menos significativo zerado (LSB = 0), portanto pode ser somado diretamente ao PC (ou ao PC+4 conforme convenção) para obter o endereço alvo.
+    \item O gerador unifica a lógica de extração/concatenação e evita que cada unidade do datapath replique a decodificação dos campos da instrução — facilita a manutenção e reduz risco de inconsistências.
+    \item A constante \texttt{sp\_init = 0x100103fc} foi definida no módulo apenas para referência (valor inicial do \texttt{sp} conforme enunciado) — a responsabilidade de carregar o \texttt{sp} inicial cabe ao fluxo de boot/initialization do processador.
+\end{itemize}
+
+Integração com o datapath:
+\begin{itemize}
+    \item O sinal \texttt{oimm} deve ser conectado ao multiplexador de entradas da ULA (quando a operação requer imediato) e ao circuito que calcula endereços para \texttt{lw}/\texttt{sw} e alvos de branch/jump.
+    \item A unidade de controle seleciona, a partir do opcode/funct3, qual formato (I/S/B/U/J) será usado — no nosso módulo a seleção é feita por um \texttt{case} sobre \texttt{instr[6:0]} (opcode), implementando os formatos relevantes.
+\end{itemize}
+
+Validação (breve):
+\begin{itemize}
+    \item Para garantir correção, testes unitários devem aplicar palavras de instrução representando cada formato e comparar \texttt{oimm} com o valor esperado (ex.: \texttt{addi}, \texttt{sw}, \texttt{beq}, \texttt{jal}, \texttt{lui}).
+\end{itemize}
+
+\subsection*{\textbf{1.4) (1.0): Geração das imagens de memória}}
+
+\textbf{1.4) (0.5)} No \textbf{Rars16\_Custom2}, vá em \textbf{File/Dump Memory} e exporte (\textbf{MIF 32 Format}) para o arquivo \textbf{de1} (sem extensão). Os arquivos \textbf{de1\_text.mif} e \textbf{de1\_data.mif} serão gerados.  
+As \textbf{memórias de instruções (1024 words)} e \textbf{de dados (1024 words)} já estão geradas, com conteúdo padrão dos arquivos MIF exportados.  
+
+\textbf{Dica}: como a \textbf{memória do FPGA} necessita de \textbf{2 ciclos de clock} para ler ou escrever um valor, a \textbf{frequência de clock da CPU} deve ser a \textbf{metade da frequência de clock da memória}.  
+
+\textbf{Endereço inicial do .text}: \texttt{0x0040\_0000}  
+
+\textbf{Endereço inicial do .data}: \texttt{0x1001\_0000}  
+
+Os arquivos de imagem de memória usados nas simulações e na inicialização das memórias foram gerados automaticamente pelo processo de montagem a partir do código de teste. Em linhas gerais:
+
+\begin{itemize}
+    \item \textbf{de1\_text}: imagem de instruções — contém as palavras (em formato binário ou hexadecimal) correspondentes ao programa a ser carregado na memória de instruções. É utilizada para \textbf{inicializar a memória de instruções} em simuladores ou em implementações que carregam a ROM de código.
+    \item \textbf{de1\_data}: imagem de dados — contém as palavras iniciais da memória de dados (valores constantes, variáveis estáticas e posições acessadas pelo programa de teste). Serve para \textbf{inicializar a RAM de dados} antes da execução do programa.
+\end{itemize}
+
+Esses arquivos permitem \textbf{reproduzir o estado inicial do sistema} (memória de instruções e de dados) de forma determinística em simuladores e ferramentas de síntese/FPGA, facilitando a \textbf{verificação funcional} e a \textbf{geração de dumps para evidências experimentais}.
+
+
+
+
+% final do documento
+\end{document}
+

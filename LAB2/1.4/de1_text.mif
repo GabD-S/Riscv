@@ -1,0 +1,29 @@
+DEPTH = 16384;
+WIDTH = 32;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+CONTENT
+BEGIN
+00000000 : 100101b7;   % 7: 	lui gp,0x10010   # descomentar para rodar no Rars %
+00000001 : 100101b7;   % 8: 	li gp, 0x10010000 %
+00000002 : 00018193;   % 8:  %
+00000003 : 0001a303;   % 9: MAIN:	lw t1,0(gp)		 %
+00000004 : 77700393;   % 10: 	addi t2,zero,0x777 %
+00000005 : 007372b3;   % 11: 	and t0,t1,t2 %
+00000006 : 007362b3;   % 12: 	or t0,t1,t2 %
+00000007 : 006382b3;   % 13: 	add t0,t2,t1 %
+00000008 : 406382b3;   % 14: 	sub t0,t2,t1 %
+00000009 : 007322b3;   % 15: 	slt t0,t1,t2 %
+0000000a : 0063a2b3;   % 16: 	slt t0,t2,t1 %
+0000000b : 00028663;   % 17: 	beq t0,zero, PULA %
+0000000c : eee00293;   % 18: 	addi t0,zero,0xFFFFFEEE %
+0000000d : 00c0006f;   % 19: 	j FIM %
+0000000e : 00c000ef;   % 20: PULA:	jal PROC %
+0000000f : ccc00293;   % 21: 	addi t0,zero,0xFFFFFCCC %
+00000010 : 0000006f;   % 22: FIM:	j FIM %
+00000011 : 07f00293;   % 24: PROC:	li t0,127 %
+00000012 : 0051a223;   % 25: 	sw t0,4(gp) %
+00000013 : 0001a283;   % 26: 	lw t0,0(gp) %
+00000014 : 0041a283;   % 27: 	lw t0,4(gp) %
+00000015 : 00008067;   % 28: 	ret %
+END;
