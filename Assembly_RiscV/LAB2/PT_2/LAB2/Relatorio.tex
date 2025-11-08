@@ -1,0 +1,709 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+% Caminho padrão para figuras (permite usar apenas o nome do arquivo nas inclusões)
+\graphicspath{{Arquivos/Q3/results/figures/}}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\geometry{a4paper, margin=1in}
+
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!40!black},
+  stringstyle=\color{purple},
+  showstringspaces=false,
+}
+
+% Definição de linguagem para Assembly (RISC-V) no listings
+\lstdefinelanguage{Assembly}{
+    morekeywords={.text,.data,.globl,li,la,addi,add,sub,mul,div,rem,
+        slli,srli,srai,andi,ori,xori,andi,or,xor,slt,slti,beq,bne,blt,bge,bgt,
+        j,jal,jalr,ret,ecall,lw,sw,lb,lh,lb,sb,flw,fsw,fmv.d,fcvt.d.w,fmul.d,fadd.d,fsub.d,fdiv.d,
+        fsd,fld,csrr,csrw,mv,lui,auipc},
+    sensitive=true,
+    morecomment=[l]{#},
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdftitle={Laboratório 1 - Assembly RISC-V},
+  pdfauthor={Grupo}
+}
+
+\begin{document}
+
+% -----------------------------
+% capa (estilo semelhante ao OAC_LAB1)
+% -----------------------------
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+        \includegraphics[width=5cm]{Lab_1/Logo_UnB.png}\\[1cm]
+
+        {\LARGE \textbf{Universidade de Brasília}}\\[4pt]
+        {\large Departamento de Ciência da Computação}\\[12pt]
+        {\Large \textbf{Disciplina: CIC0099 -- Organização e Arquitetura de Computadores -- Unificado}}\\[20pt]
+
+        {\huge \textbf{Laboratório 2}}\\[6pt]
+        {\Large \textbf{CPU RISC-V UNICICLO}}\\[2cm]
+
+        \textbf{Grupo:} \\[4pt]
+        \begin{tabular}{l}
+            
+            Gabriel de Sousa -- 211056000 \\
+            Ana Luísa Reis Nascente -- 211045688 \\
+            Guilherme Henrique Oliveira Araujo -- 211026646 \\
+            Gabriel Pinto Rodrigues -- 241002331 \\
+            Victor Yan Martinez -- 241032994 \\
+            
+        \end{tabular}
+
+        \vfill
+
+        
+
+        \vspace{0.8cm}
+        \today
+    \end{center}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+
+\newpage
+
+\section*{Descrição Geral}
+
+(10.0) Implemente o processador \textbf{Uniciclo com ISA Reduzida} com as instruções:
+\texttt{add, sub, and, or, slt, lw, sw, beq, jal}, e ainda as instruções \texttt{jalr}, \texttt{addi} e \texttt{lui} . 
+
+\begin{center}
+    \includegraphics[width = 15 cm]{Lab_2/Circuito.png}
+\end{center}
+
+
+
+% seção de análise (relato do experimento)
+\section{Implementação do processador Uniciclo com ISA Reduzida.}
+
+\subsection{(1.0) Questão 1 - Analise o programa de1.s:} Analise o programa de1.s que testa a corretude da implementação de todas as 9 + 3 instruções e
+teste no Rars. Dica: O registrador t0 é usado para visualizar resultados!
+
+A seção a seguir apresenta o relato do experimento realizado com o programa \texttt{de1.s}. A tabela resume o trace observado (valores depois da execução de cada instrução-chave) e a coluna "Esperado" apresenta o resultado calculado pela semântica RISC‑V. A subseção seguinte contém as observações e conclusões extraídas do experimento.
+
+\begin{longtable}{p{4.5cm} p{3.2cm} p{3.2cm} p{5.5cm}}
+\caption{Trace reduzido e comparação Observado x Esperado para \texttt{de1.s}.}\\
+	oprule
+Instrução (label / ordem) & Observado (valores após) & Esperado (valores calculados) & Comentário / interpretação \\
+\midrule
+\endfirsthead
+	oprule
+Instrução (label / ordem) & Observado (valores após) & Esperado (valores calculados) & Comentário / interpretação \\
+\midrule
+\endhead
+
+\lstinline|lw t1,0(gp)| (primeira instrução de MAIN) & t1 = -241 & t1 = 0xFFFFFF0F = -241 & A palavra em gp+0 tem valor 0xFFFFFF0F (interpretação signed = -241). \\
+
+\lstinline|addi t2,zero,0x777| & t2 = 1911 & t2 = 0x777 = 1911 & Imediato positivo carregado em t2. \\
+
+\lstinline|and t0,t1,t2| & t0 = 1799 & t0 = (0xFFFFFF0F & 0x0777) = 0x707 = 1799 & Operação bit‑a‑bit conforme esperado. \\
+
+\lstinline|or t0,t1,t2| & t0 = -129 & t0 = 0xFFFFFF7F (signed = -129) & Resultado com bit de sinal ativo; representação signed refletida no valor. \\
+
+\lstinline|add t0,t2,t1| & t0 = 1670 & t0 = 1911 + (-241) = 1670 & Soma aritmética correta (sem overflow). \\
+
+\lstinline|sub t0,t2,t1| & t0 = 2152 & t0 = 1911 - (-241) = 2152 & Subtração aritmética correta. \\
+
+\lstinline|slt t0,t1,t2| & t0 = 1 & t0 = (t1 < t2) ? 1 : 0 = 1 & Comparação signed: -241 < 1911 é verdadeira. \\
+
+\lstinline|slt t0,t2,t1| & t0 = 0 & t0 = (t2 < t1) ? 1 : 0 = 0 & Comparação signed invertida resulta em falso. \\
+
+\lstinline|beq t0,zero,PULA| & branch tomado (PC muda para PULA) & branch tomado porque t0==0 & Controle de fluxo redirecionado para o bloco PULA. \\
+
+\lstinline|jal PROC| (em PULA) & ra = 4194364 (observado) & ra = endereço de retorno (PC+4) & Endereço de retorno salvo em \texttt{ra}; salto para \texttt{PROC}. \\
+
+\lstinline|PROC: li t0,127| & t0 = 127 & t0 = 127 & Carregamento imediato correto. \\
+
+\lstinline|sw t0,4(gp)| & memória[gP+4] = 127 & gravação na memória efetuada & Valor 127 escrito em gp+4. \\
+
+\lstinline|lw t0,0(gp)| & t0 = -241 & t0 = conteúdo em gp+0 = 0xFFFFFF0F = -241 & Releitura confirma conteúdo inicial. \\
+
+\lstinline|lw t0,4(gp)| & t0 = 127 & t0 = 127 (valor escrito por \lstinline|sw|) & Leitura confirma valor previamente escrito. \\
+
+\lstinline|ret| / \lstinline|jalr ra,0| & retorno para instrução após \lstinline|jal PROC| & retorno conforme esperado & Fluxo volta para a instrução seguinte ao \texttt{jal}. \\
+
+Instrução após retorno (\lstinline|addi t0,zero,0xFFFFFCCC|) & t0 = -820 & t0 = 0xFFFFFCCC = -820 & Imediato negativo carregado (sign‑extension correta). \\
+
+\bottomrule
+\end{longtable}
+
+\subsection*{Resultados e observações}
+\begin{itemize}
+    \item Os valores observados durante o experimento correspondem aos resultados aritméticos e bit‑a‑bit previstos pela semântica das instruções RISC‑V (ex.: load de 0xFFFFFF0F → -241; addi 0x777 → 1911).
+    \item Operações lógicas (AND/OR) produziram os valores esperados considerando a representação binária dos operandos; em particular, a operação OR resultou em valor com bit de sinal ativo (representado como número negativo no formato signed). 
+    \item Operações aritméticas (ADD/SUB) com operandos negativos retornaram resultados numéricos corretos e não houve indicação de overflow nas instruções observadas.
+    \item As instruções de comparação (SLT) e o BEQ conduziram o fluxo de controle conforme esperado: a combinação de SLT seguida de BEQ redirecionou a execução para o bloco PULA, que invoca \texttt{PROC} via \texttt{jal}.
+    \item A chamada \texttt{jal PROC} armazenou o endereço de retorno em \texttt{ra} (valor observado consistente com PC+4). A rotina \texttt{PROC} escreveu em memória com \texttt{sw} e os subsequentes \texttt{lw} leram os valores esperados, confirmando coerência de acesso à memória e alinhamento de palavra.
+    \item Após retorno de \texttt{PROC}, a execução prosseguiu normalmente até a instrução que carrega um imediato negativo em \texttt{t0} (0xFFFFFCCC → -820), indicando sign‑extension correta do imediato.
+\end{itemize}
+
+\subsection{(1.0) Questão 1.2 – Implementação do Banco de Registradores (3 leituras: rs1, rs2 e disp)}
+
+O módulo do banco de registradores implementa o arquivo de registradores da CPU e oferece três leituras simultâneas: duas leituras para execução (\texttt{rs1} e \texttt{rs2}) e uma leitura adicional para exibição/depuração (\texttt{disp}). Abaixo explico, por partes, o que cada bloco e sinal do módulo realiza:
+
+\begin{description}
+  \item[Inclusão de parâmetros (\texttt{PARAMS})] \hfill \\
+    O \texttt{`ifndef / `include} garante que constantes e endereços (por exemplo \texttt{STACK\_ADDRESS} e \texttt{DATA\_ADDRESS}) sejam trazidos do arquivo \texttt{Parametros.v}. Esses símbolos definem valores como o endereço inicial do \texttt{sp} (stack pointer) e do \texttt{gp} (global pointer / data pointer).
+
+  \item[Portas do módulo] \hfill \\
+    \begin{itemize}
+      \item \texttt{iCLK, iRST} – clock e reset síncrono/assíncrono (o reset está implementado como sensível em \texttt{posedge iRST} no exemplo).
+      \item \texttt{iRegWrite} – sinal de escrita: habilita escrita no registrador destino no pulso de clock.
+      \item \texttt{iReadRegister1, iReadRegister2, iWriteRegister} – índices de 5 bits para leitura/escrita (x0..x31).
+      \item \texttt{iWriteData} – dado de 32 bits a ser escrito quando \texttt{iRegWrite} está ativo.
+      \item \texttt{oReadData1, oReadData2} – saídas combinacionais com o conteúdo dos registradores endereçados por \texttt{iReadRegister1/2}.
+      \item \texttt{iRegDispSelect, oRegDisp} – seleção de qual registrador será mostrado no sinal de depuração; permite leitura adicional (terceira porta de leitura).
+    \end{itemize}
+
+  \item[Array de registradores] \hfill \\
+    \texttt{reg [31:0] registers[31:0];} é a memória do banco de registradores: 32 entradas de 32 bits. É a estrutura principal onde ficam os valores de x0..x31.
+
+  \item[Parâmetros de índices (SP e GP)] \hfill \\
+    Definições locais como \texttt{parameter SPR=5'd2, GPR=5'd3;} mapeiam índices simbólicos (por exemplo, \texttt{SPR} aponta para o registrador utilizado como \texttt{sp}). Esses parâmetros facilitam inicializar e documentar quais registradores correspondem ao \texttt{sp} e ao \texttt{gp}.
+
+  \item[Initial block – inicialização em simulação] \hfill \\
+    No bloco \texttt{initial} o vetor de registradores é zerado e, em seguida, são atribuídos valores iniciais a \texttt{registers[SPR]} e \texttt{registers[GPR]}. Em particular, o \textbf{stack pointer} (\texttt{sp}) é inicializado com \texttt{STACK\_ADDRESS}, que pelo enunciado deve ser \texttt{0x1001\_03FC}. Esse bloco é usado em simulação e, dependendo da síntese/FPGA, também pode gerar a memória com conteúdo inicial (ou pode ser necessário carregar por MIF).
+
+  \item[Leituras (três portas)] \hfill \\
+    As leituras são implementadas como leituras combinacionais diretas do array:
+    \texttt{oReadData1 = registers[iReadRegister1]; oReadData2 = registers[iReadRegister2];}
+    e a porta de exibição: \texttt{oRegDisp = registers[iRegDispSelect];}
+    Isso permite acesso simultâneo a três registradores sem necessidade de clock — comportamento esperado em bancode registradores na maioria das CPUs uniciclo.
+
+  \item[Escrita síncrona e reset] \hfill \\
+    No bloco sensível a \texttt{posedge iCLK} (e a \texttt{posedge iRST} conforme o código), implementa-se:
+    \begin{itemize}
+      \item Se \texttt{iRST} estiver ativo: zera todos os registradores e re-inicializa \texttt{SPR} e \texttt{GPR} com os endereços definidos (mantendo o mesmo valor inicial usado no \texttt{initial}).
+      \item Caso contrário, no pulso de clock, se \texttt{iRegWrite} estiver ativo e \texttt{iWriteRegister != 0} (proteção que evita sobrescrever o registrador x0), então \texttt{registers[iWriteRegister] <= iWriteData;} — a escrita efetiva é feita aqui.
+    \end{itemize}
+    Essa organização garante que escritas ocorram apenas na borda de subida do clock e respeitem a convenção de que x0 permanece sempre zero.
+
+  \item[Proteções e boas práticas notáveis] \hfill \\
+    \begin{itemize}
+      \item A condição \texttt{(iWriteRegister != 5'b0)} impede escrita em x0 — comportamento correto segundo a ABI RISC-V.
+      \item O código usa um loop para inicializar o array; em SystemVerilog e em muitos flows de síntese isso funciona, mas em alguns fluxos de FPGA pode ser preferível usar arquivo MIF para inicialização de memórias.
+      \item É comum usar atribuições não bloqueantes (\texttt{<=}) no bloco sensível ao clock para evitar comportamentos indeterminados; o código já usa \texttt{<=} para a escrita, o que é apropriado.
+    \end{itemize}
+
+  
+\end{description}
+
+\noindent Em resumo: o módulo provê três leituras simultâneas (duas para execução e uma para exibição), escrita síncrona com proteção para x0, inicialização do \texttt{sp} com \texttt{0x1001\_03FC} usando uma constante definida em \texttt{Parametros.v} e comportamento de reset que restaura o estado inicial do banco de registradores. Ajustes menores podem ser necessários para conformidade de síntese (tipo de \texttt{oRegDisp}, forma de reset, inicialização em FPGA).
+
+\subsection{(1.0) Questão 1.3 – Implementação do Gerador de Imediatos}
+
+O gerador de imediatos é o módulo responsável por extrair e formar corretamente o valor imediato (\texttt{oImm}) a partir da instrução de 32 bits recebida como entrada (\texttt{iInstrucao}). Ele interpreta o campo de opcode da instrução (bits \texttt{[6:0]}) e, com base nesse valor, identifica o tipo de formato (I, S, B, J ou U) da instrução RISC-V.  
+
+O módulo é estruturado da seguinte forma:
+
+\begin{itemize}
+    \item Inicialmente, é feita a inclusão condicional do arquivo de parâmetros, onde estão definidos os códigos dos opcodes (\texttt{OPC\_LOAD}, \texttt{OPC\_STORE}, \texttt{OPC\_BRANCH}, etc.) utilizados no case.
+    \item O módulo possui uma entrada de 32 bits, representando a instrução, e uma saída também de 32 bits, que contém o imediato já formatado.
+    \item Dentro de um bloco \texttt{always @(*)}, é utilizado um \texttt{case} que verifica o campo \texttt{iInstrucao[6:0]}, o qual contém o opcode.
+    \item Para cada tipo de instrução:
+    \begin{itemize}
+        \item Nas instruções do tipo I (como \texttt{LOAD}, \texttt{OPIMM}, \texttt{JALR}, e também o \texttt{ADDI}), o imediato é formado pelos bits \texttt{[31:20]}, com extensão de sinal a partir do bit mais significativo (\texttt{[31]}).
+        \item No tipo S (\texttt{STORE}), o imediato é construído a partir dos campos \texttt{[31:25]} e \texttt{[11:7]}, também com extensão de sinal.
+        \item Para o tipo B (\texttt{BRANCH}), o imediato é montado com uma combinação de bits espalhados pela instrução, representando deslocamentos de salto, e finalizado com um bit zero em menor ordem.
+        \item As instruções do tipo J (\texttt{JAL}) usam um formato específico, onde os bits do imediato estão distribuídos nos campos \texttt{[31]}, \texttt{[19:12]}, \texttt{[20]}, e \texttt{[30:21]}, também concatenados e com o bit menos significativo em zero.
+        \item Por fim, para o tipo U (\texttt{LUI}), o imediato é obtido diretamente dos bits superiores \texttt{[31:12]} da instrução, deslocados 12 posições à esquerda, o que equivale a concatenar 12 zeros na parte menos significativa.
+    \end{itemize}
+    \item Caso o opcode não corresponda a nenhum dos tipos tratados, o módulo retorna o valor definido como \texttt{ZERO}.
+\end{itemize}
+
+Com essa implementação, o gerador consegue fornecer corretamente o imediato correspondente a qualquer uma das instruções exigidas pela ISA reduzida, permitindo que os demais blocos da CPU uniciclo (como o bloco de controle e a ULA) utilizem esses valores conforme o tipo da operação.
+
+\subsection{(1.0) Questão 1.4 - Geração das imagens de memória}
+
+No \textbf{Rars16\_Custom2}, vá em \textbf{File/Dump Memory} e exporte (\textbf{MIF 32 Format}) para o arquivo \textbf{de1} (sem extensão). Os arquivos \textbf{de1\_text.mif} e \textbf{de1\_data.mif} serão gerados.  
+As \textbf{memórias de instruções (1024 words)} e \textbf{de dados (1024 words)} já estão geradas, com conteúdo padrão dos arquivos MIF exportados.  
+
+\textbf{Dica}: como a \textbf{memória do FPGA} necessita de \textbf{2 ciclos de clock} para ler ou escrever um valor, a \textbf{frequência de clock da CPU} deve ser a \textbf{metade da frequência de clock da memória}.  
+
+\textbf{Endereço inicial do .text}: \texttt{0x0040\_0000}  
+
+\textbf{Endereço inicial do .data}: \texttt{0x1001\_0000}  
+
+Os arquivos de imagem de memória usados nas simulações e na inicialização das memórias foram gerados automaticamente pelo processo de montagem a partir do código de teste. Em linhas gerais:
+
+\begin{itemize}
+    \item \textbf{de1\_text}: imagem de instruções — contém as palavras (em formato binário ou hexadecimal) correspondentes ao programa a ser carregado na memória de instruções. É utilizada para \textbf{inicializar a memória de instruções} em simuladores ou em implementações que carregam a ROM de código.
+    \item \textbf{de1\_data}: imagem de dados — contém as palavras iniciais da memória de dados (valores constantes, variáveis estáticas e posições acessadas pelo programa de teste). Serve para \textbf{inicializar a RAM de dados} antes da execução do programa.
+\end{itemize}
+
+Esses arquivos permitem \textbf{reproduzir o estado inicial do sistema} (memória de instruções e de dados) de forma determinística em simuladores e ferramentas de síntese/FPGA, facilitando a \textbf{verificação funcional} e a \textbf{geração de dumps para evidências experimentais}.
+
+\subsection{Questão 1.5(0.5): Implementação da ULA mínima necessária (ALU.v)}
+
+O módulo \texttt{ALU} implementa a Unidade Lógica e Aritmética do processador, realizando operações matemáticas e lógicas entre os operandos \texttt{iA} e \texttt{iB}, conforme o código de controle \texttt{iControl}.
+
+\textbf{Principais pontos do código:}
+
+\begin{itemize}
+    \item \textbf{Inclusão de parâmetros:}
+    
+    O arquivo inclui definições de operações e constantes de \texttt{Parametros.v}.
+    
+    \item \textbf{Entradas e saída:}
+    \begin{itemize}
+        \item \texttt{iControl[4:0]}: seleciona a operação a ser realizada.
+        \item \texttt{iA, iB[31:0]}: operandos.
+        \item \texttt{oResult[31:0]}: resultado da operação.
+    \end{itemize}
+    
+    \item \textbf{Operações básicas:}
+    
+    O bloco \texttt{case (iControl)} seleciona a operação:
+\end{itemize}
+
+\begin{verbatim}
+OPAND:      oResult <= iA & iB;           // AND bit a bit
+OPOR:       oResult <= iA | iB;           // OR bit a bit
+OPXOR:      oResult <= iA ^ iB;           // XOR bit a bit
+OPADD:      oResult <= iA + iB;           // Soma
+OPSUB:      oResult <= iA - iB;           // Subtração
+OPSLT:      oResult <= iA < iB;           // Menor que (signed)
+OPSLTU:     oResult <= $unsigned(iA) < $unsigned(iB); // Menor que (unsigned)
+OPSLL:      oResult <= iA << iB[4:0];     // Shift lógico à esquerda
+OPSRL:      oResult <= iA >> iB[4:0];     // Shift lógico à direita
+OPSRA:      oResult <= iA >>> iB[4:0];    // Shift aritmético à direita
+OPLUI:      oResult <= iB;                // Carrega imediato
+\end{verbatim}
+
+\begin{itemize}
+    \item \textbf{Operações de multiplicação e divisão (RV32IM):}
+    
+    Se a macro \texttt{RV32IM} estiver definida, operações extras são habilitadas:
+\end{itemize}
+
+\begin{verbatim}
+OPMUL:      oResult <= mul[31:0];         // Multiplicação (parte baixa)
+OPMULH:     oResult <= mulh[63:32];       // Multiplicação (parte alta signed)
+OPMULHU:    oResult <= mulu[63:32];       // Multiplicação (parte alta unsigned)
+OPMULHSU:   oResult <= mulsu[63:32];      // Multiplicação (signed x unsigned)
+OPDIV:      oResult <= iA / iB;           // Divisão signed
+OPDIVU:     oResult <= $unsigned(iA) / $unsigned(iB); // Divisão unsigned
+OPREM:      oResult <= iA % iB;           // Resto signed
+OPREMU:     oResult <= $unsigned(iA) % $unsigned(iB); // Resto unsigned
+\end{verbatim}
+
+\begin{itemize}
+    \item \textbf{Valor padrão:}
+    
+    Se o código de controle não corresponder a nenhuma operação, o resultado é zerado:
+\end{itemize}
+
+\begin{verbatim}
+OPNULL, default: oResult <= ZERO;
+\end{verbatim}
+
+\textbf{Resumo:}
+
+O módulo \texttt{ALU} recebe dois operandos e um código de operação, realiza a operação correspondente (lógica, aritmética, multiplicação, divisão, etc.) e retorna o resultado em \texttt{oResult}. As operações disponíveis dependem do parâmetro de compilação \texttt{RV32IM}.
+
+
+
+\subsection{ Questão 1.6(1.0): Implementação do Controlador da ULA e BLoco controlador}
+
+O módulo \texttt{ALUControl} gera um código de controle de 5 bits (\texttt{oALUControl}) para a ALU a partir dos sinais de controle da instrução. A seguir está o código-fonte do arquivo:
+
+\begin{verbatim}
+`ifndef PARAM
+    `include "Parametros.v"
+`endif
+
+module ALUControl(
+    input        [1:0] iALUOp,
+    input              iInstr30,
+    input        [2:0] iFunct3,
+    output logic [4:0] oALUControl
+);
+
+always @ (*)
+    case (iALUOp[1:0])
+        2'b00:
+            oALUControl <= OPADD;
+        2'b01:
+            oALUControl <= OPSUB;
+        2'b10:
+            case (iFunct3[2:0])
+                3'b000:
+                    oALUControl <= iInstr30 ? OPSUB : OPADD;
+                3'b111:
+                    oALUControl <= OPAND;
+                3'b110:
+                    oALUControl <= OPOR;
+                3'b010:
+                    oALUControl <= OPSLT;
+                default:
+                    oALUControl <= 5'b0;
+            endcase
+        default:
+            oALUControl <= 5'b0;
+    endcase
+
+endmodule
+\end{verbatim}
+
+\textbf{Explicação resumida:}
+
+\begin{itemize}
+    \item \textbf{Diretivas iniciais:} inclui o arquivo \texttt{Parametros.v} se a macro \texttt{PARAM} não estiver definida, presumivelmente definindo códigos como \texttt{OPADD}, \texttt{OPSUB}, etc.
+    
+    \item \textbf{Portas:}
+    \begin{itemize}
+        \item \texttt{iALUOp[1:0]}: campo de controle vindo da unidade de controle principal que seleciona o modo geral da ALU.
+        \item \texttt{iInstr30}: bit 30 da instrução (usado para distinguir ADD/SUB em instruções R-type, equivalente ao penúltimo bit de \texttt{funct7}).
+        \item \texttt{iFunct3[2:0]}: campo \texttt{funct3} da instrução para refinar a operação.
+        \item \texttt{oALUControl[4:0]}: código de operação final para a ALU.
+    \end{itemize}
+    
+    \item \textbf{Lógica:}
+    \begin{itemize}
+        \item Se \texttt{iALUOp} $= 2$'$b00 \Rightarrow$ força \texttt{OPADD} (ex.: instruções de carga/armazenamento).
+        \item Se \texttt{iALUOp} $= 2$'$b01 \Rightarrow$ força \texttt{OPSUB} (ex.: branch).
+        \item Se \texttt{iALUOp} $= 2$'$b10 \Rightarrow$ decodifica por \texttt{iFunct3}:
+        \begin{itemize}
+            \item $3$'$b000$: usa \texttt{iInstr30} para escolher entre \texttt{OPSUB} (quando 1) e \texttt{OPADD} (quando 0).
+            \item $3$'$b111$: \texttt{OPAND}.
+            \item $3$'$b110$: \texttt{OPOR}.
+            \item $3$'$b010$: \texttt{OPSLT}.
+            \item default: zera o código ($5$'$b0$).
+        \end{itemize}
+        \item default externo: também zera o código.
+    \end{itemize}
+    
+    \item \textbf{Observações:}
+    \begin{itemize}
+        \item O módulo assume que os mnemônicos como \texttt{OPADD}, \texttt{OPSUB}, etc., estão definidos em \texttt{Parametros.v}.
+        \item Uso de atribuições não-blocking (\texttt{<=}) em um bloco combinacional \texttt{always @(*)} é funcionalmente aceitável aqui, mas muitos estilos recomendam atribuição blocking (\texttt{=}) para lógica combinacional para evitar confusões de simulação/sintetização.
+    \end{itemize}
+\end{itemize}
+
+\textbf{\Large Implementando o Módulo Control}
+
+O módulo \texttt{Control} recebe o campo de opcode da instrução (\texttt{iOpcode}) e, usando um bloco \texttt{case}, define os sinais de controle para os demais blocos do processador. Cada caso do \texttt{case} corresponde a um tipo de instrução RISC-V.
+
+Por exemplo, para instruções do tipo R (operações aritméticas entre registradores):
+
+\begin{verbatim}
+case (iOpcode[6:0])
+    OPC_RTYPE:
+        begin
+        oALUSrc   <= 1'b0;   // Usa registrador como fonte para ALU
+        oMemToReg <= 1'b0;   // Resultado da ALU vai para registrador
+        oRegWrite <= 1'b1;   // Habilita escrita no registrador
+        oSelImmU  <= 1'b0;   // Não usa imediato U-type
+        ...
+        oALUOp    <= 2'b10;  // ALU opera conforme funct3/funct7
+        end
+\end{verbatim}
+
+Para instruções de carga (LOAD):
+
+\begin{verbatim}
+    OPC_LOAD:
+        begin
+        oALUSrc    <= 1'b1;  // Usa imediato para calcular endereço
+        oMemToReg  <= 1'b1;  // Dado lido da memória vai para registrador
+        oRegWrite  <= 1'b1;  // Habilita escrita no registrador
+        oMemRead   <= 1'b1;  // Habilita leitura de memória
+        ...
+        oALUOp     <= 2'b00; // ALU faz soma para endereço
+        end
+\end{verbatim}
+
+Para instruções de salto (JAL):
+
+\begin{verbatim}
+    7'b1101111: //jal
+        begin
+        oALUSrc    <= 1'b1;
+        oRegWrite  <= 1'b1;  // Escreve PC+4 em rd
+        oJump      <= 1'b1;  // Habilita salto
+        oPcToReg   <= 1'b1;  // Seleciona PC+4 para writeback
+        ...
+        end
+\end{verbatim}
+
+Para instruções LUI (carrega imediato U-type):
+
+\begin{verbatim}
+    OPC_LUI:
+        begin
+        oSelImmU   <= 1'b1;  // Seleciona imediato U-type para writeback
+        oRegWrite  <= 1'b1;
+        ...
+        end
+\end{verbatim}
+
+Se o opcode não corresponder a nenhum caso, todos os sinais são zerados:
+
+\begin{verbatim}
+    default:
+        begin
+        oALUSrc   <= 1'b0;
+        oMemToReg <= 1'b0;
+        oRegWrite <= 1'b0;
+        ...
+        oALUOp    <= 2'b00;
+        end
+\end{verbatim}
+
+\textbf{Resumo:}
+
+Cada bloco \texttt{begin ... end} dentro do \texttt{case} configura os sinais de controle para o tipo de instrução detectado, permitindo que o processador execute corretamente operações de cálculo, acesso à memória, saltos e escrita de imediato, conforme o opcode recebido.
+
+
+\subsection{Questão 1.7) Implementando um Processador Uniciclo completo}
+
+\underline{\Large{Integração do Datapath}}
+
+\vspace{0.3cm}
+
+Esta seção descreve como os módulos são conectados para formar o caminho de dados (datapath) completo do processador.
+
+\vspace{0.3cm}
+
+\textbf{1. Instanciação da unidade de controle:}
+
+Decodifica o opcode da instrução e gera sinais de controle.
+
+\begin{verbatim}
+Control controle (.iOpcode(Instr[6:0]),
+                  .oALUOp(ALUOp));
+\end{verbatim}
+
+\textbf{2. Instanciação do banco de registradores:}
+
+Permite leitura e escrita nos registradores.
+
+\begin{verbatim}
+Registers registradores (.iCLK(clockMem),
+                        .oReadData2(RegisterRead2));
+\end{verbatim}
+
+\textbf{3. Gerador de imediatos:}
+
+Extrai o valor imediato da instrução.
+
+\begin{verbatim}
+ImmGen geradorDeImediato(.iInstrucao(Instr[31:0]),
+                         .oImm(imediatoGerado));
+\end{verbatim}
+
+\textbf{4. Multiplexadores:}
+
+Selecionam dados para entrada da ALU e para escrita nos registradores.
+
+\begin{verbatim}
+Mux2 muxALURegistrador(.iChoice(ALUSrc),
+                       .oResult(inputBALU));
+Mux2 muxRegWrite(.iChoice(MemToReg),
+                 .oResult(muxRegWriteA));
+\end{verbatim}
+
+\textbf{5. Instanciação das memórias:}
+
+Memória de instrução e memória de dados.
+
+\begin{verbatim}
+ramI MemC (.address(PC[11:2]), .clock(clockMem), .data(), .wren(1'b0), 
+           .rden(1'b1), .q(Instr));
+ramD MemD (.address(SaidaULA[11:2]), .clock(clockMem), .data(RegisterRead2), 
+           .wren(EscreveMem), .rden(LerMem), .rden(LeMem));
+\end{verbatim}
+
+\textbf{6. Inicialização do PC e sinais principais:}
+
+Define valores iniciais para PC, instrução e saída do registrador.
+
+\begin{verbatim}
+initial
+begin
+    PC <= TEXT_ADDRESS;
+    Instr <= 32'b0;
+    regout <= 32'b0;
+end
+\end{verbatim}
+
+\textbf{Resumo:}
+
+O arquivo conecta todos os módulos do datapath e controle, formando o processador uniciclo, onde cada instrução é executada em um único ciclo de clock.
+
+
+\textbf{\large A) }
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Lab_2/processador_uniciclo_completo.png}
+
+    
+    \caption{Processador Uniciclo}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Lab_2/Uniclo_inteiro.png}
+    \caption{Interior Uniciclo}
+\end{figure}
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Lab_2/uniciclo_esquerda.png}
+    \caption{Uniciclo - Parte Esquerda}
+\end{figure}
+
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Lab_2/uniclo_direita.png}
+    \caption{Uniciclo - Parte Direita}
+\end{figure}
+
+\newpage
+
+\textbf{\large B) Análise de Recursos e Requisitos Temporais}
+
+\vspace{0.3cm}
+
+\textbf{Recursos Utilizados:}
+
+\begin{itemize}
+    \item \textbf{Projeto (Top-level Entity Name):} Uniciclo
+    \item \textbf{Família do Dispositivo (Family):} Cyclone V
+    \item \textbf{Utilização de Lógica (Logic utilization in ALMs):} 1.268
+    \item \textbf{Registradores Totais (Total registers):} 1.268
+    \item \textbf{Pinos Totais (Total pins):} 104
+    \item \textbf{Bits de Memória (Total block memory bits):} 65.536
+    \item \textbf{Blocos DSP (Total DSP Blocks):} 0
+    \item \textbf{PLLs (Total PLLs):} 0
+    \item \textbf{DLLs (Total DLLs):} 0
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Os requisitos podem ser verificados em:}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Lab_2/70.png}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Lab_2/78.png}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Lab_2/C4.png}
+    \end{minipage}
+\end{figure}
+
+\vspace{0.3cm}
+
+\textbf{Observação:} Alguns testes foram feitos em computadores diferentes, por gargalos relacionados às condições dos computadores.
+
+\vspace{0.3cm}
+
+\textbf{Levantamento dos Requisitos Temporais:}
+
+Em seguida, fizemos o levantamento dos requisitos temporais. De acordo com o Timing Analyzer, definimos o período como 20.000 ns para uma frequência de 50 MHz e obtemos os tempos $t_{su}$ (setup time), $t_h$ (hold time) e $t_{co}$ (clock to output time). Os resultados obtidos podem ser verificados nas tabelas e imagens a seguir:
+
+\begin{table}[h]
+\centering
+\caption{Setup Times}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Data Port} & \textbf{Clock Port} & \textbf{Rise} & \textbf{Fall} & \textbf{Clock Edge} & \textbf{Clock Reference} \\
+\midrule
+altera\_reserved\_tdi & altera\_reserved\_tck & 2.488 & 2.760 & Rise & altera\_reserved\_tck \\
+altera\_reserved\_tms & altera\_reserved\_tck & 2.973 & 3.191 & Rise & altera\_reserved\_tck \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Hold Times}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Data Port} & \textbf{Clock Port} & \textbf{Rise} & \textbf{Fall} & \textbf{Clock Edge} & \textbf{Clock Reference} \\
+\midrule
+altera\_reserved\_tdi & altera\_reserved\_tck & 1.062 & 0.997 & Rise & altera\_reserved\_tck \\
+altera\_reserved\_tms & altera\_reserved\_tck & 0.724 & 0.749 & Rise & altera\_reserved\_tck \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+\textbf{Clock to Output Time:}
+
+        \includegraphics[width=\textwidth]{Lab_2/clk.png}
+        \includegraphics[width=\textwidth]{Lab_2/clk1.png}
+        \includegraphics[width=\textwidth]{Lab_2/clk3.png}
+
+\vspace{0.3cm}
+
+Ao observar os resultados, temos o Slack positivo, logo o processador atende aos requisitos temporais. A frequência real (50 MHz) está dentro do limite suportado (52.8 MHz). Esse resultado pode ser verificado na seguinte imagem:
+
+    \includegraphics[width=0.9\textwidth]{Lab_2/clk4.png}
+
+\newpage
+
+\textbf{\large C)}
+
+    \includegraphics[width = 15 cm]{Lab_2/C.png}
+
+\newpage
+
+\textbf{\large D)}
+
+
+        \vspace{3.0 cm}
+        \includegraphics[width=\textwidth]{Lab_2/C.png}
+        \vspace{3.0 cm}
+        \includegraphics[width=\textwidth]{Lab_2/D.png}
+        \vspace{3.0 cm}
+        \includegraphics[width=\textwidth]{Lab_2/D5.png}
+        \vspace{3.0 cm}
+        
+
+
+\end{document}
+

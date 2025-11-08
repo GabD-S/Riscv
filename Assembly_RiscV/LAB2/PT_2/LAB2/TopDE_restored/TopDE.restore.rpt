@@ -1,0 +1,94 @@
+Restore Archived Project report for TopDE
+Sun Jun  1 09:41:44 2025
+Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Restore Archived Project Summary
+  3. Restore Archived Project Messages
+  4. Files Restored
+  5. Files Not Restored
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++-------------------------------------------------------------------------+
+; Restore Archived Project Summary                                        ;
++---------------------------------+---------------------------------------+
+; Restore Archived Project Status ; Successful - Sun Jun  1 09:41:44 2025 ;
+; Revision Name                   ; TopDE                                 ;
+; Top-level Entity Name           ; TopDE                                 ;
+; Family                          ; Cyclone IV E                          ;
++---------------------------------+---------------------------------------+
+
+
++-----------------------------------+
+; Restore Archived Project Messages ;
++-----------------------------------+
+Info: Successfully restored '/home/mari/Documents/oac/quartus/Lab2/TopDE.qar' into the '/home/mari/Documents/oac/quartus/Lab2/TopDE_restored/' directory
+Info: Generated report 'TopDE.restore.rpt'
+Info (23030): Evaluation of Tcl script /home/mari/Documents/oac/quartus/install/quartus/common/tcl/apps/qpm/qar.tcl was successful
+Info: Quartus Prime Shell was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 578 megabytes
+    Info: Processing ended: Sun Jun  1 09:41:44 2025
+    Info: Elapsed time: 00:00:00
+    Info: Total CPU time (on all processors): 00:00:00
+
+
++-------------------------------+
+; Files Restored                ;
++-------------------------------+
+; File Name                     ;
++-------------------------------+
+; qar_info.json                 ;
+; ALU.v                         ;
+; ImmGen.v                      ;
+; Multiciclo.v                  ;
+; Parametros.v                  ;
+; Pipeline.v                    ;
+; Registers.v                   ;
+; TopDE.qpf                     ;
+; TopDE.qsf                     ;
+; TopDE.v                       ;
+; TopDE.vwf                     ;
+; TopDE_assignment_defaults.qdf ;
+; Uniciclo.v                    ;
+; assignment_defaults.qdf       ;
+; de1_data.mif                  ;
+; de1_text.mif                  ;
+; ramD.qip                      ;
+; ramD.v                        ;
+; ramI.qip                      ;
+; ramI.v                        ;
++-------------------------------+
+
+
++--------------------+
+; Files Not Restored ;
++--------------------+
+; File Name          ;
++--------------------+
+
+

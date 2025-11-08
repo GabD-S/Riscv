@@ -1,0 +1,21 @@
+# Ignore Quartus / synthesis generated artifacts to keep repo lightweight
+TopDE_restored/db/
+TopDE_restored/greybox_tmp/
+TopDE_restored/incremental_db/
+TopDE_restored/output_files/
+TopDE_restored/simulation/
+
+# Compiled simulation outputs
+*.vvp
+*.log
+
+# Backup files
+*.bak
+
+# Generated memory initialization variants (keep canonical ones if needed)
+# Uncomment if you don't want to track these:
+# *.mif
+
+# OS / editor files
+.DS_Store
+*.swp
