@@ -1,0 +1,65 @@
+Disciplina: CIC0099 – Organização e Arquitetura de Computadores – Unificado
+Equipes de até 5 pessoas.
+Entrega do relatório (pdf) e fontes (.qar) em um único arquivo zip pelo Moodle até às 23h55 do dia 02/11/2025.
+Não serão aceitos relatórios depois do dia e horário definidos.
+
+2025/2
+
+Laboratório 2
+- CPU RISC-V UNICICLO –
+Objetivos:
+•
+Treinar o aluno com a Linguagem de Descrição de Hardware (HDL) Verilog;
+•
+Familiarizar o aluno com o software de síntese QUARTUS Prime v24.1;
+•
+Desenvolver a capacidade de análise e síntese de sistemas digitais usando uma HDL;
+•
+Implementar uma CPU Uniciclo compatível com a ISA RV32I reduzida;
+
+1) (10.0) Implemente o processador Uniciclo com ISA Reduzida com as instruções: add, sub, and, or, slt, lw,
+sw, beq, jal, e ainda as instruções jalr, addi e lui.
+
+O projeto TopDE.qar possui o arcabouço para o desenvolvimento e teste do seu processador.
+1.1) (1.0) Analise o programa de1.s que testa a corretude da implementação de todas as 9 + 3 instruções e
+teste no Rars. Dica: O registrador t0 é usado para visualizar resultados!
+1.2) (1.0) Implemente o Banco de Registradores com 3 leituras simultâneas: rs1, rs2 e disp.
+Stack Pointer (sp) inicial: 0x1001_03FC
+1.3) (1.0) Implemente o Gerador de Imediatos.
+1.4) (0.5) No Rars16_Custom2, vá em File/Dump Memory e exporte (MIF 32 Format) para o arquivo de1
+(sem extensão). Os arquivos de1_text.mif e de1_data.mif serão gerados.
+As Memórias de Instruções (1024 words) e de Dados (1024 words) já estão geradas, com conteúdo default
+dos arquivos mif gerados.
+Dica: Como a memória do FPGA necessita 2 ciclos de clock para ler ou escrever um valor, a frequência de
+clock da CPU deve ser a metade do clock da Memória.
+Endereço inicial do .text: 0x0040_0000
+
+Endereço inicial do .data: 0x1001_0000
+
+1.5) (0.5) Implemente a ULA mínima necessária (add, sub, and, or, slt, zero).
+1.6) (1.0) Implemente o Controlador da ULA e o Bloco Controlador.
+1.7) (5.0) Implemente o Processador Uniciclo completo.
+(1.0) a) Visualize o netlist RTL view. Coloque print screens dos módulos no relatório.
+(1.0) b) Levante os requisitos físicos e temporais do seu processador completo. Verifique se os slacks de
+setup e hold estão sendo cumpridos.
+(1.5) c) Faça as simulações por forma de onda funcional e temporal com o programa de1.s, mostrando o
+funcionamento correto da CPU.
+(1.5) d) Qual a máxima frequência de clock utilizável na sua CPU? Verifique experimentalmente mudando a
+frequência CLOCK do arquivo .vwf e apresentando a simulação temporal por forma de onda.
+
+O relatório deve ser escrito na forma resposta ao item, contendo apenas os itens que valem ponto. No final deverá constar a
+URL clicável de um vídeo da apresentação gravada usando o PowerPoint onde o grupo apresenta os resultados obtidos dos
+itens pedidos. O grupo deve gravar a apresentação usando uma videoconferência no Teams (usem a equipe OAC-U), com a
+participação por câmera de TODOS os componentes. É importante que todos os participantes falem sobre os itens, quem não
+participar ativamente da apresentação receberá nota 0 no Laboratório.
+Sugestão: crie um canal para o seu grupo no YouTube e poste os vídeos dos relatórios sempre com o nome ‘UnB – OAC
+Unificado – 2025-2’ – Grupo Y - Laboratório X - <palavras-chaves que identifiquem este vídeo em uma busca>’.
+Passos do vídeo:
+i)
+Apresente o grupo, a disciplina, a turma, o semestre e o Laboratório;
+ii)
+Apresente cada item solicitado que vale ponto. Sugerimos que cada componente apresente um item;
+iii)
+Apresente as conclusões o grupo.
+
+
