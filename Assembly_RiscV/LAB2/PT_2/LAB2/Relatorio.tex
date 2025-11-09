@@ -105,9 +105,9 @@
 
 
 % seção de análise (relato do experimento)
-\section{Implementação do processador Uniciclo com ISA Reduzida.}
+\section{(10.0) Implementação do processador Uniciclo com ISA Reduzida.}
 
-\subsection{(1.0) Questão 1 - Analise o programa de1.s:} Analise o programa de1.s que testa a corretude da implementação de todas as 9 + 3 instruções e
+\subsection{(1.0) Analisar o programa de1.s:} Analise o programa de1.s que testa a corretude da implementação de todas as 9 + 3 instruções e
 teste no Rars. Dica: O registrador t0 é usado para visualizar resultados!
 
 A seção a seguir apresenta o relato do experimento realizado com o programa \texttt{de1.s}. A tabela resume o trace observado (valores depois da execução de cada instrução-chave) e a coluna "Esperado" apresenta o resultado calculado pela semântica RISC‑V. A subseção seguinte contém as observações e conclusões extraídas do experimento.
@@ -168,7 +168,7 @@ Instrução após retorno (\lstinline|addi t0,zero,0xFFFFFCCC|) & t0 = -820 & t0
     \item Após retorno de \texttt{PROC}, a execução prosseguiu normalmente até a instrução que carrega um imediato negativo em \texttt{t0} (0xFFFFFCCC → -820), indicando sign‑extension correta do imediato.
 \end{itemize}
 
-\subsection{(1.0) Questão 1.2 – Implementação do Banco de Registradores (3 leituras: rs1, rs2 e disp)}
+\subsection{(1.0) Implementação do Banco de Registradores (3 leituras: rs1, rs2 e disp)}
 
 O módulo do banco de registradores implementa o arquivo de registradores da CPU e oferece três leituras simultâneas: duas leituras para execução (\texttt{rs1} e \texttt{rs2}) e uma leitura adicional para exibição/depuração (\texttt{disp}). Abaixo explico, por partes, o que cada bloco e sinal do módulo realiza:
 
@@ -205,7 +205,7 @@ O módulo do banco de registradores implementa o arquivo de registradores da CPU
     No bloco sensível a \texttt{posedge iCLK} (e a \texttt{posedge iRST} conforme o código), implementa-se:
     \begin{itemize}
       \item Se \texttt{iRST} estiver ativo: zera todos os registradores e re-inicializa \texttt{SPR} e \texttt{GPR} com os endereços definidos (mantendo o mesmo valor inicial usado no \texttt{initial}).
-      \item Caso contrário, no pulso de clock, se \texttt{iRegWrite} estiver ativo e \texttt{iWriteRegister != 0} (proteção que evita sobrescrever o registrador x0), então \texttt{registers[iWriteRegister] <= iWriteData;} — a escrita efetiva é feita aqui.
+      \item Caso contrário, no pulso de clock, se \texttt{iRegWrite} estiver ativo e \texttt{iWriteRegister != 0} (proteção que evita sobrescrever o registrador x0), então \texttt{registers [iWriteRegister] <= iWriteData;} — a escrita efetiva é feita aqui.
     \end{itemize}
     Essa organização garante que escritas ocorram apenas na borda de subida do clock e respeitem a convenção de que x0 permanece sempre zero.
 
@@ -221,7 +221,7 @@ O módulo do banco de registradores implementa o arquivo de registradores da CPU
 
 \noindent Em resumo: o módulo provê três leituras simultâneas (duas para execução e uma para exibição), escrita síncrona com proteção para x0, inicialização do \texttt{sp} com \texttt{0x1001\_03FC} usando uma constante definida em \texttt{Parametros.v} e comportamento de reset que restaura o estado inicial do banco de registradores. Ajustes menores podem ser necessários para conformidade de síntese (tipo de \texttt{oRegDisp}, forma de reset, inicialização em FPGA).
 
-\subsection{(1.0) Questão 1.3 – Implementação do Gerador de Imediatos}
+\subsection{(1.0) Implementação do Gerador de Imediatos}
 
 O gerador de imediatos é o módulo responsável por extrair e formar corretamente o valor imediato (\texttt{oImm}) a partir da instrução de 32 bits recebida como entrada (\texttt{iInstrucao}). Ele interpreta o campo de opcode da instrução (bits \texttt{[6:0]}) e, com base nesse valor, identifica o tipo de formato (I, S, B, J ou U) da instrução RISC-V.  
 
@@ -244,7 +244,7 @@ O módulo é estruturado da seguinte forma:
 
 Com essa implementação, o gerador consegue fornecer corretamente o imediato correspondente a qualquer uma das instruções exigidas pela ISA reduzida, permitindo que os demais blocos da CPU uniciclo (como o bloco de controle e a ULA) utilizem esses valores conforme o tipo da operação.
 
-\subsection{(1.0) Questão 1.4 - Geração das imagens de memória}
+\subsection{(0.5) Geração das imagens de memória}
 
 No \textbf{Rars16\_Custom2}, vá em \textbf{File/Dump Memory} e exporte (\textbf{MIF 32 Format}) para o arquivo \textbf{de1} (sem extensão). Os arquivos \textbf{de1\_text.mif} e \textbf{de1\_data.mif} serão gerados.  
 As \textbf{memórias de instruções (1024 words)} e \textbf{de dados (1024 words)} já estão geradas, com conteúdo padrão dos arquivos MIF exportados.  
@@ -264,7 +264,7 @@ Os arquivos de imagem de memória usados nas simulações e na inicialização d
 
 Esses arquivos permitem \textbf{reproduzir o estado inicial do sistema} (memória de instruções e de dados) de forma determinística em simuladores e ferramentas de síntese/FPGA, facilitando a \textbf{verificação funcional} e a \textbf{geração de dumps para evidências experimentais}.
 
-\subsection{Questão 1.5(0.5): Implementação da ULA mínima necessária (ALU.v)}
+\subsection{(0.5) Implementação da ULA mínima necessária (ALU.v)}
 
 O módulo \texttt{ALU} implementa a Unidade Lógica e Aritmética do processador, realizando operações matemáticas e lógicas entre os operandos \texttt{iA} e \texttt{iB}, conforme o código de controle \texttt{iControl}.
 
@@ -334,7 +334,7 @@ O módulo \texttt{ALU} recebe dois operandos e um código de operação, realiza
 
 
 
-\subsection{ Questão 1.6(1.0): Implementação do Controlador da ULA e BLoco controlador}
+\subsection{(1.0) Implementação do Controlador da ULA e Bloco controlador}
 
 O módulo \texttt{ALUControl} gera um código de controle de 5 bits (\texttt{oALUControl}) para a ALU a partir dos sinais de controle da instrução. A seguir está o código-fonte do arquivo:
 
@@ -411,7 +411,7 @@ endmodule
     \end{itemize}
 \end{itemize}
 
-\textbf{\Large Implementando o Módulo Control}
+\textbf{\large Implementando o Módulo Control}
 
 O módulo \texttt{Control} recebe o campo de opcode da instrução (\texttt{iOpcode}) e, usando um bloco \texttt{case}, define os sinais de controle para os demais blocos do processador. Cada caso do \texttt{case} corresponde a um tipo de instrução RISC-V.
 
@@ -486,7 +486,7 @@ Se o opcode não corresponder a nenhum caso, todos os sinais são zerados:
 Cada bloco \texttt{begin ... end} dentro do \texttt{case} configura os sinais de controle para o tipo de instrução detectado, permitindo que o processador execute corretamente operações de cálculo, acesso à memória, saltos e escrita de imediato, conforme o opcode recebido.
 
 
-\subsection{Questão 1.7) Implementando um Processador Uniciclo completo}
+\subsection{(5.0) Implementando um Processador Uniciclo completo}
 
 \underline{\Large{Integração do Datapath}}
 
@@ -563,7 +563,7 @@ end
 O arquivo conecta todos os módulos do datapath e controle, formando o processador uniciclo, onde cada instrução é executada em um único ciclo de clock.
 
 
-\textbf{\large A) }
+\subsubsection{a) (1.0) Visualização do Netlist RTL (RTL View)}
 
 \begin{figure}[p]
     \centering
@@ -588,13 +588,13 @@ O arquivo conecta todos os módulos do datapath e controle, formando o processad
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=0.5\textwidth]{Lab_2/uniclo_direita.png}
+    \includegraphics[width=0.6\textwidth]{Lab_2/uniclo_direita.png}
     \caption{Uniciclo - Parte Direita}
 \end{figure}
 
 \newpage
 
-\textbf{\large B) Análise de Recursos e Requisitos Temporais}
+\subsubsection{b) (1.0) Análise de Requisitos Físicos e Temporais}
 
 \vspace{0.3cm}
 
@@ -618,17 +618,17 @@ O arquivo conecta todos os módulos do datapath e controle, formando o processad
 
 \begin{figure}[h]
     \centering
-    \begin{minipage}{0.4\textwidth}
+    \begin{minipage}{0.43\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Lab_2/70.png}
     \end{minipage}%
     \hfill
-    \begin{minipage}{0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Lab_2/78.png}
     \end{minipage}%
     \hfill
-    \begin{minipage}{0.4\textwidth}
+    \begin{minipage}{0.5\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Lab_2/C4.png}
     \end{minipage}
@@ -686,13 +686,13 @@ Ao observar os resultados, temos o Slack positivo, logo o processador atende aos
 
 \newpage
 
-\textbf{\large C)}
+\subsubsection{c) (1.5) Simulações Funcional e Temporal}
 
     \includegraphics[width = 15 cm]{Lab_2/C.png}
 
 \newpage
 
-\textbf{\large D)}
+\subsubsection{d) (1.5) Determinação da Frequência Máxima de Clock}
 
 
         \vspace{3.0 cm}
